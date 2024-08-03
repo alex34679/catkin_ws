@@ -1,0 +1,18 @@
+# crossfire wrapper parameters
+
+serial_port: /dev/ttyUSB2
+
+frequency: 120
+
+# a.k.a 300 degree/s
+max_roll_rate: 4.363323
+max_pitch_rate: 4.363323
+max_yaw_rate: 4.363323
+max_thrust: 2.0
+
+drone_mass: 0.088
+
+
+# 有待进一步测量
+thrust_k: 317.9
+thrust_b: 72.4

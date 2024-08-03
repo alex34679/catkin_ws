@@ -1,0 +1,27 @@
+<package format="2">
+  <name>cnuav_control</name>
+  <version>0.0.0</version>
+  <description>
+    This is the control package for the general control and navigation framework.
+  </description>
+  <maintainer email="lucasking7@hotmail.com">Ivana Bildbotz</maintainer>
+  <license>NONE</license>
+
+  <author>Tao Jin</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>roscpp</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>quadrotor_msgs</depend>
+
+  <build_depend>message_generation</build_depend>
+
+  <exec_depend>message_runtime</exec_depend>
+  <exec_depend>rospy</exec_depend>
+
+  <doc_depend>doxygen</doc_depend>
+</package>

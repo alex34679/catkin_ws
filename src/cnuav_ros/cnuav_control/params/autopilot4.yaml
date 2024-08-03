@@ -1,0 +1,38 @@
+# config
+
+id: 4
+
+verbose: true
+
+enable_log: false
+log_filename: /home/tianbot/multi_uav/src/cnuav_ros/cnuav_control/log/log.txt
+
+enable_integral_compensation: true
+
+max_error_integral: 0.5
+
+k_integral_compensation: 0.005
+
+frequency: 120.0
+
+takeoff_height: 0.5
+
+takeoff_velocity: 0.1
+
+land_velocity: 0.1
+
+circle_center: [ 0.0, 0.0, 0.0 ]
+
+# > 0: clockwise
+# < 0: counter-clockwise
+circle_velocity: 1.0
+
+circle_radius: 1.5
+
+circle_height: 0.5
+
+circle_warmup_time: 5.0
+
+std_velocity: 0.5
+
+std_acceleration: 0.5

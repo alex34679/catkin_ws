@@ -1,0 +1,171 @@
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="quad_name_1"/>
+    <arg name="quad_name_2"/>
+    <arg name="quad_name_3"/>
+
+    <arg name="world_name"/>
+    <arg name="paused"/>
+    <arg name="gui"/>
+    <arg name="enable_command_feedthrough" default="false"/>
+    <arg name="custom_models" default=""/>
+
+    <arg name="mav_name_1"/>
+    <arg name="mav_name_2"/>
+    <arg name="mav_name_3"/>
+
+
+    <arg name="model1"/>
+    <arg name="model2"/>
+    <arg name="model3"/>
+
+
+    <arg name="enable_logging"/>
+    <arg name="enable_ground_truth"/>
+
+
+    <arg name="log_file_1"/>
+    <arg name="log_file_2"/>
+    <arg name="log_file_3"/>
+
+
+    <arg name="x_init_1"/>
+    <arg name="y_init_1"/>
+    <arg name="x_init_2"/>
+    <arg name="y_init_2"/>
+    <arg name="x_init_3"/>
+    <arg name="y_init_3"/>
+
+    <arg name="debug"/>
+    <arg name="verbose"/>
+
+    <!-- Gazebo stuff to spawn the world !-->
+    <env name="GAZEBO_MODEL_PATH"
+      value="${GAZEBO_MODEL_PATH}:$(find rotors_gazebo)/models:$(arg custom_models)"/>
+    <env name="GAZEBO_RESOURCE_PATH"
+      value="${GAZEBO_RESOURCE_PATH}:$(find rotors_gazebo)/models"/>
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(arg world_name)" />
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="paused" value="$(arg paused)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="verbose" value="$(arg verbose)"/>
+    </include>
+
+    <!-- RotorS stuff to spawn the quadrotor !-->
+    <group ns="$(arg mav_name_1)">
+        <include file="$(find rotors_gazebo)/launch/spawn_mav_multi.launch">
+              <arg name="mav_name" value="$(arg mav_name_1)" />
+              <arg name="model" value="$(arg model1)" />
+              <arg name="enable_logging" value="$(arg enable_logging)" />
+              <arg name="enable_ground_truth" value="$(arg enable_ground_truth)" />
+              <arg name="log_file" value="$(arg log_file_1)"/>
+              <arg name="x" value="$(arg x_init_1)" />
+              <arg name="y" value="$(arg y_init_1)" />
+        </include>
+    </group>
+
+
+    <group ns="$(arg mav_name_2)">
+        <include file="$(find rotors_gazebo)/launch/spawn_mav_multi.launch">
+              <arg name="mav_name" value="$(arg mav_name_2)" />
+              <arg name="model" value="$(arg model2)" />
+              <arg name="enable_logging" value="$(arg enable_logging)" />
+              <arg name="enable_ground_truth" value="$(arg enable_ground_truth)" />
+              <arg name="log_file" value="$(arg log_file_2)"/>
+              <arg name="x" value="$(arg x_init_2)" />
+              <arg name="y" value="$(arg y_init_2)" />
+        </include>
+    </group>
+
+
+    <group ns="$(arg mav_name_3)">
+        <include file="$(find rotors_gazebo)/launch/spawn_mav_multi.launch">
+              <arg name="mav_name" value="$(arg mav_name_3)" />
+              <arg name="model" value="$(arg model3)" />
+              <arg name="enable_logging" value="$(arg enable_logging)" />
+              <arg name="enable_ground_truth" value="$(arg enable_ground_truth)" />
+              <arg name="log_file" value="$(arg log_file_3)"/>
+              <arg name="x" value="$(arg x_init_3)" />
+              <arg name="y" value="$(arg y_init_3)" />
+        </include>
+    </group>
+    
+
+      <!-- RPG stuff !-->
+      <group ns="$(arg quad_name_1)" >
+
+          <node pkg="rpg_rotors_interface" type="rpg_rotors_interface"
+              name="rpg_rotors_interface" output="screen" >
+            <rosparam file="$(find rpg_rotors_interface)/parameters/rpg_rotors_interface.yaml" />
+
+            <remap from="odometry" to="ground_truth/odometry" />
+            <remap from="rpg_rotors_interface/arm" to="bridge/arm" />
+          </node>
+
+        <node pkg="cnuav_control" type="cnuav_one" name="cnuav_one" output="screen">
+             <remap from="pose" to="ground_truth/odometry" />
+             <remap from="command" to="control_command" />
+             <remap from="arm" to="bridge/arm" />
+        </node>
+
+        <!-- <node pkg="joy" type="joy_node" name="joy_node">
+            <param name="autorepeat_rate" value="10"/>
+            <remap from="joy" to="/joy" />
+        </node> -->
+
+    </group>
+
+    <group ns="$(arg quad_name_2)" >
+
+          <node pkg="rpg_rotors_interface" type="rpg_rotors_interface"
+              name="rpg_rotors_interface" output="screen" >
+            <rosparam file="$(find rpg_rotors_interface)/parameters/rpg_rotors_interface.yaml" />
+
+            <remap from="odometry" to="ground_truth/odometry" />
+            <remap from="rpg_rotors_interface/arm" to="bridge/arm" />
+          </node>
+
+        <node pkg="cnuav_control" type="cnuav_two" name="cnuav_two" output="screen">
+             <remap from="pose" to="ground_truth/odometry" />
+             <remap from="command" to="control_command" />
+             <remap from="arm" to="bridge/arm" />
+        </node>
+
+        <!-- <node pkg="joy" type="joy_node" name="joy_node">
+            <param name="autorepeat_rate" value="10"/>
+            <remap from="joy" to="/joy" />
+        </node> -->
+
+    </group>
+
+    <group ns="$(arg quad_name_3)" >
+
+          <node pkg="rpg_rotors_interface" type="rpg_rotors_interface"
+              name="rpg_rotors_interface" output="screen" >
+            <rosparam file="$(find rpg_rotors_interface)/parameters/rpg_rotors_interface.yaml" />
+
+            <remap from="odometry" to="ground_truth/odometry" />
+            <remap from="rpg_rotors_interface/arm" to="bridge/arm" />
+          </node>
+
+        <node pkg="cnuav_control" type="cnuav_three" name="cnuav_three" output="screen">
+             <remap from="pose" to="ground_truth/odometry" />
+             <remap from="command" to="control_command" />
+             <remap from="arm" to="bridge/arm" />
+        </node>
+
+        <!-- <node pkg="joy" type="joy_node" name="joy_node">
+            <param name="autorepeat_rate" value="10"/>
+            <remap from="joy" to="/joy" />
+        </node> -->
+
+    </group>
+
+    <node pkg="joy" type="joy_node" name="joy_node">
+      <param name="autorepeat_rate" value="10"/>
+      <remap from="joy" to="/joy" />
+    </node>
+
+</launch>

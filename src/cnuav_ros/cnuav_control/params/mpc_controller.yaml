@@ -1,0 +1,14 @@
+# cmpc_controller parameters
+
+max_thrust: 12.0
+
+min_thrust: 2.0
+
+max_bodyrate: 3.0
+
+# weight matrix of state costs
+Q: [70.0, 70.0, 120.0, 10, 10, 10, 10, 1, 1, 1 ]
+#位置，姿态（四元数），速度
+
+# weight matrix of control effort
+R: [ 1.0, 1.0, 1.0, 1.0 ]

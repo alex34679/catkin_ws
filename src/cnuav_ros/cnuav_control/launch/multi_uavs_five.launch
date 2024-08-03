@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<launch>
+<!-- 修改飞机名称时需要修改： launch文件 ，subs YAML文件名， 动捕名 -->
+    <arg name="num_quad" default= "5"/>
+    <arg name="quad_name1" default="multi1"/>
+    <arg name="quad_name2" default="multi2"/>
+    <arg name="quad_name3" default="multi3"/>
+    <arg name="quad_name4" default="multi4"/>
+    <arg name="quad_name5" default="multi5"/>
+
+
+    <include file="$(find vrpn_client_ros)/launch/sample.launch">
+    </include>
+
+    <group ns="$(arg quad_name1)" >
+
+        <node pkg="cnuav_control" type="cnuav_exp_one" name="cnuav_exp_one" output="screen">
+            <remap from="pose" to="/vrpn_client_node/$(arg quad_name1)/pose" />
+            <remap from="command" to="control_command" />
+        </node>
+
+
+        <node pkg="sbus_wrapper" type="sbus_wrapper_node" name="sbus_wrapper_node" output="screen">
+            <rosparam file="$(find sbus_wrapper)/config/$(arg quad_name1).yaml" />
+            <remap from="pose" to="/vrpn_client_node/$(arg quad_name1)/pose" />
+        </node>
+
+    </group>
+
+    <group ns="$(arg quad_name2)" >
+
+        <node pkg="cnuav_control" type="cnuav_exp_two" name="cnuav_exp_two" output="screen">
+            <remap from="pose" to="/vrpn_client_node/$(arg quad_name2)/pose" />
+            <remap from="command" to="control_command" />
+        </node>
+
+        <node pkg="sbus_wrapper" type="sbus_wrapper_node" name="sbus_wrapper_node" output="screen">
+            <rosparam file="$(find sbus_wrapper)/config/$(arg quad_name2).yaml" />
+            <remap from="pose" to="/vrpn_client_node/$(arg quad_name2)/pose" />
+        </node>
+
+    </group>
+
+        <group ns="$(arg quad_name3)" >
+
+        <node pkg="cnuav_control" type="cnuav_exp_three" name="cnuav_exp_three" output="screen">
+            <remap from="pose" to="/vrpn_client_node/$(arg quad_name3)/pose" />
+            <remap from="command" to="control_command" />
+        </node>
+
+
+        <node pkg="sbus_wrapper" type="sbus_wrapper_node" name="sbus_wrapper_node" output="screen">
+            <rosparam file="$(find sbus_wrapper)/config/$(arg quad_name3).yaml" />
+            <remap from="pose" to="/vrpn_client_node/$(arg quad_name3)/pose" />
+        </node>
+
+    </group>
+
+        <group ns="$(arg quad_name4)" >
+
+        <node pkg="cnuav_control" type="cnuav_exp_four" name="cnuav_exp_four" output="screen">
+            <remap from="pose" to="/vrpn_client_node/$(arg quad_name4)/pose" />
+            <remap from="command" to="control_command" />
+        </node>
+
+
+        <node pkg="sbus_wrapper" type="sbus_wrapper_node" name="sbus_wrapper_node" output="screen">
+            <rosparam file="$(find sbus_wrapper)/config/$(arg quad_name4).yaml" />
+            <remap from="pose" to="/vrpn_client_node/$(arg quad_name4)/pose" />
+        </node>
+
+    </group>
+
+
+
+    <group ns="$(arg quad_name5)" >
+
+        <node pkg="cnuav_control" type="cnuav_exp_five" name="cnuav_exp_five" output="screen">
+            <remap from="pose" to="/vrpn_client_node/$(arg quad_name5)/pose" />
+            <remap from="command" to="control_command" />
+        </node>
+
+
+        <node pkg="sbus_wrapper" type="sbus_wrapper_node" name="sbus_wrapper_node" output="screen">
+            <rosparam file="$(find sbus_wrapper)/config/$(arg quad_name5).yaml" />
+            <remap from="pose" to="/vrpn_client_node/$(arg quad_name5)/pose" />
+        </node>
+
+    </group>
+
+    <node pkg="joy" type="joy_node" name="joy_node">
+            <param name="autorepeat_rate" value="10"/>
+    </node>
+
+    <node pkg="rosbag" type="record" name="record" args="-a -o /home/tianbot/record/real_record/multi_exp.bag">
+    </node>
+
+
+</launch>

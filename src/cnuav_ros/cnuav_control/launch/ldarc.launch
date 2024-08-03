@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="quad_name" default="multi1"/>
+
+    <include file="$(find vrpn_client_ros)/launch/sample.launch">
+    </include>
+
+    <group ns="$(arg quad_name)" >
+
+        <node pkg="cnuav_control" type="cnuav_cbf_clf_exp_node" name="cnuav_cbf_clf_exp_node" output="screen">
+            <remap from="pose" to="/vrpn_client_node/$(arg quad_name)/pose" />
+            <remap from="command" to="control_command" />
+        </node>
+
+        <node pkg="joy" type="joy_node" name="joy_node">
+                    <param name="autorepeat_rate" value="10"/>
+                </node>
+
+        <node pkg="sbus_wrapper" type="sbus_wrapper_node" name="sbus_wrapper_node" output="screen">
+            <rosparam file="$(find sbus_wrapper)/config/$(arg quad_name).yaml" />
+            <remap from="pose" to="/vrpn_client_node/$(arg quad_name)/pose" />
+        </node>
+
+    </group>
+
+    <node pkg="rosbag" type="record" name="record" args="-a -o /home/tianbot/record/real_record/mpc.bag">
+    </node>
+
+
+</launch>
