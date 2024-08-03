@@ -73,7 +73,7 @@
       <param name="attenuation"   type="double" value="0.1"/>
   </node>
 
-  <node pkg="so3_quadrotor_simulator" type="quadrotor_simulator_so3" name="quadrotor_simulator_so3" output="screen">
+  <!-- <node pkg="so3_quadrotor_simulator" type="quadrotor_simulator_so3" name="quadrotor_simulator_so3" output="screen">
         <param name="rate/odom" value="200.0"/>
         <param name="simulator/init_state_x" value="$(arg init_x)"/>
         <param name="simulator/init_state_y" value="$(arg init_y)"/>
@@ -83,9 +83,9 @@
         <remap from="~cmd" to="so3_cmd"/>
         <remap from="~force_disturbance" to="force_disturbance"/>    
         <remap from="~moment_disturbance" to="moment_disturbance"/>        
-  </node>
+  </node> -->
  
-  <node pkg="nodelet" type="nodelet" args="standalone so3_control/SO3ControlNodelet" name="so3_control" required="true" output="screen">
+  <!-- <node pkg="nodelet" type="nodelet" args="standalone so3_control/SO3ControlNodelet" name="so3_control" required="true" output="screen">
         <param name="so3_control/init_state_x" value="$(arg init_x)"/>
         <param name="so3_control/init_state_y" value="$(arg init_y)"/>
         <param name="so3_control/init_state_z" value="$(arg init_z)"/>
@@ -101,7 +101,7 @@
         <param name="use_external_yaw "      value="false"/>
         <param name="gains/rot/z" value="1.0"/>    
         <param name="gains/ang/z" value="0.1"/>        
-  </node>  
+  </node>   -->
  
   <!--node pkg="so3_disturbance_generator" name="so3_disturbance_generator" type="so3_disturbance_generator" output="screen">
         <remap from="~odom" to="/visual_slam/odom"/>             
@@ -111,7 +111,7 @@
         <remap from="~moment_disturbance" to="moment_disturbance"/>            
   </node--> 
  
-  <node pkg="odom_visualization" name="odom_visualization" type="odom_visualization" output="screen">
+  <!-- <node pkg="odom_visualization" name="odom_visualization" type="odom_visualization" output="screen">
         <remap from="~odom" to="/visual_slam/odom"/>
         <param name="color/a" value="1.0"/>    
         <param name="color/r" value="0.0"/>        
@@ -120,8 +120,8 @@
         <param name="covariance_scale" value="100.0"/>       
         <param name="robot_scale" value="1.0"/>
         <param name="tf45" value="true"/>
-  </node>
-
+  </node> -->
+<!-- 
   <node pkg="local_sensing_node" type="pcl_render_node" name="pcl_render_node" output="screen">
         <rosparam command="load" file="$(find local_sensing_node)/params/camera.yaml" />
         <param name="sensing_horizon"  value="5.0" />
@@ -134,6 +134,6 @@
 
         <remap from="~global_map" to="/map_generator/global_cloud"/>
         <remap from="~odometry"   to="$(arg odometry_topic)"/>
-  </node>
+  </node> -->
 
 </launch>

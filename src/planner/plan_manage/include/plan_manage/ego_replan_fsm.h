@@ -17,7 +17,7 @@
 #include <ego_planner/DataDisp.h>
 #include <plan_manage/planner_manager.h>
 #include <traj_utils/planning_visualization.h>
-
+#include <geometry_msgs/PoseStamped.h>
 using std::vector;
 
 namespace ego_planner
@@ -56,6 +56,7 @@ namespace ego_planner
     int waypoint_num_;
     double planning_horizen_, planning_horizen_time_;
     double emergency_time_;
+    bool if_sim;
 
     /* planning data */
     bool trigger_, have_target_, have_odom_, have_new_target_;
@@ -94,10 +95,13 @@ namespace ego_planner
     /* ROS functions */
     void execFSMCallback(const ros::TimerEvent &e);
     void checkCollisionCallback(const ros::TimerEvent &e);
-    void waypointCallback(const nav_msgs::PathConstPtr &msg);
+    void waypointCallback(const geometry_msgs::PoseStamped::ConstPtr &msg);
     void odometryCallback(const nav_msgs::OdometryConstPtr &msg);
 
     bool checkCollision();
+
+    void odometryCallback_sim(const nav_msgs::Odometry::ConstPtr& msg);
+    void odometryCallback_exp(const geometry_msgs::PoseStampedConstPtr& msg);
 
   public:
     EGOReplanFSM(/* args */)

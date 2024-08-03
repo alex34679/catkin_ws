@@ -1,13 +1,15 @@
 <?xml version="1.0"?>
 <launch>
 
-  <arg name="model"/>
-  <arg name="quad_name"/>
-  <arg name="enable_ground_truth"/>
-  <arg name="enable_logging"/>
-  <arg name="log_file"/>
-  <arg name="paused"/>
-  <arg name="rviz_environment"/>
+  <!-- 定义参数 -->
+  <arg name="model" default="$(find your_package)/urdf/your_model.urdf"/>
+  <arg name="quad_name" default="hummingbird_rviz"/>
+  <arg name="enable_ground_truth" default="true"/>
+  <arg name="enable_logging" default="true"/>
+  <arg name="log_file" default="$(find cnuav_control)/logs/log_file.log"/>
+  <arg name="paused" default="false"/>
+  <arg name="rviz_environment" default="$(find your_package)/rviz/default.rviz"/>
+
   
   <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" 
       args="1 0 0 0 0 0 1 world base_link 100" />

@@ -6,11 +6,13 @@ namespace ego_planner
 
   void EGOReplanFSM::init(ros::NodeHandle &nh)
   {
+
+    ros::NodeHandle nh_;
     current_wp_ = 0;
     exec_state_ = FSM_EXEC_STATE::INIT;
     have_target_ = false;
     have_odom_ = false;
-
+    
     /*  fsm param  */
     nh.param("fsm/flight_type", target_type_, -1);
     nh.param("fsm/thresh_replan", replan_thresh_, -1.0);
@@ -18,6 +20,8 @@ namespace ego_planner
     nh.param("fsm/planning_horizon", planning_horizen_, -1.0);
     nh.param("fsm/planning_horizen_time", planning_horizen_time_, -1.0);
     nh.param("fsm/emergency_time_", emergency_time_, 1.0);
+
+    nh.getParam("mode", if_sim);
 
     nh.param("fsm/waypoint_num", waypoint_num_, -1);
     for (int i = 0; i < waypoint_num_; i++)
@@ -36,13 +40,23 @@ namespace ego_planner
     exec_timer_ = nh.createTimer(ros::Duration(0.01), &EGOReplanFSM::execFSMCallback, this);
     safety_timer_ = nh.createTimer(ros::Duration(0.05), &EGOReplanFSM::checkCollisionCallback, this);
 
-    odom_sub_ = nh.subscribe("/odom_world", 1, &EGOReplanFSM::odometryCallback, this);
+    // odom_sub_ = nh.subscribe("/odom_world", 1, &EGOReplanFSM::odometryCallback, this);
+    // odom_sub_ = nh.subscribe("/hummingbird/odometry_sensor1/odometry", 1, &EGOReplanFSM::odometryCallback, this);
+
+    if (false) {
+        odom_sub_ = nh_.subscribe("pose", 10, &EGOReplanFSM::odometryCallback_sim, this);
+    } else {
+        odom_sub_ = nh_.subscribe("pose", 10, &EGOReplanFSM::odometryCallback_exp, this);
+    }
+
+
 
     bspline_pub_ = nh.advertise<ego_planner::Bspline>("/planning/bspline", 10);
     data_disp_pub_ = nh.advertise<ego_planner::DataDisp>("/planning/data_display", 100);
 
     if (target_type_ == TARGET_TYPE::MANUAL_TARGET)
-      waypoint_sub_ = nh.subscribe("/waypoint_generator/waypoints", 1, &EGOReplanFSM::waypointCallback, this);
+      // waypoint_sub_ = nh.subscribe("/waypoint_generator/waypoints", 1, &EGOReplanFSM::waypointCallback, this);
+        waypoint_sub_ = nh.subscribe("/move_base_simple/goal", 1, &EGOReplanFSM::waypointCallback, this);
     else if (target_type_ == TARGET_TYPE::PRESET_TARGET)
     {
       ros::Duration(1.0).sleep();
@@ -106,17 +120,16 @@ namespace ego_planner
     }
   }
 
-  void EGOReplanFSM::waypointCallback(const nav_msgs::PathConstPtr &msg)
-  {
-    if (msg->poses[0].pose.position.z < -0.1)
-      return;
+  void EGOReplanFSM::waypointCallback(const geometry_msgs::PoseStamped::ConstPtr &msg) {
+    // if (msg->pose.position.z < -0.1)
+    //   return;
 
     cout << "Triggered!" << endl;
     trigger_ = true;
     init_pt_ = odom_pos_;
 
     bool success = false;
-    end_pt_ << msg->poses[0].pose.position.x, msg->poses[0].pose.position.y, 1.0;
+    end_pt_ << msg->pose.position.x, msg->pose.position.y, 0.5;
     success = planner_manager_->planGlobalTraj(odom_pos_, odom_vel_, Eigen::Vector3d::Zero(), end_pt_, Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero());
 
     visualization_->displayGoalPoint(end_pt_, Eigen::Vector4d(0, 0.5, 0.5, 1), 0.3, 0);
@@ -152,25 +165,66 @@ namespace ego_planner
     }
   }
 
-  void EGOReplanFSM::odometryCallback(const nav_msgs::OdometryConstPtr &msg)
-  {
-    odom_pos_(0) = msg->pose.pose.position.x;
-    odom_pos_(1) = msg->pose.pose.position.y;
-    odom_pos_(2) = msg->pose.pose.position.z;
+  // void EGOReplanFSM::odometryCallback(const nav_msgs::OdometryConstPtr &msg)
+  // {
+  //   odom_pos_(0) = msg->pose.pose.position.x;
+  //   odom_pos_(1) = msg->pose.pose.position.y;
+  //   odom_pos_(2) = msg->pose.pose.position.z;
 
-    odom_vel_(0) = msg->twist.twist.linear.x;
-    odom_vel_(1) = msg->twist.twist.linear.y;
-    odom_vel_(2) = msg->twist.twist.linear.z;
+  //   odom_vel_(0) = msg->twist.twist.linear.x;
+  //   odom_vel_(1) = msg->twist.twist.linear.y;
+  //   odom_vel_(2) = msg->twist.twist.linear.z;
 
-    //odom_acc_ = estimateAcc( msg );
+  //   //odom_acc_ = estimateAcc( msg );
 
-    odom_orient_.w() = msg->pose.pose.orientation.w;
-    odom_orient_.x() = msg->pose.pose.orientation.x;
-    odom_orient_.y() = msg->pose.pose.orientation.y;
-    odom_orient_.z() = msg->pose.pose.orientation.z;
+  //   odom_orient_.w() = msg->pose.pose.orientation.w;
+  //   odom_orient_.x() = msg->pose.pose.orientation.x;
+  //   odom_orient_.y() = msg->pose.pose.orientation.y;
+  //   odom_orient_.z() = msg->pose.pose.orientation.z;
 
-    have_odom_ = true;
+  //   have_odom_ = true;
+  // }
+
+
+  void EGOReplanFSM::odometryCallback_sim(const nav_msgs::Odometry::ConstPtr& msg){
+      odom_pos_(0) = msg->pose.pose.position.x;
+      odom_pos_(1) = msg->pose.pose.position.y;
+      odom_pos_(2) = msg->pose.pose.position.z;
+
+      odom_vel_(0) = msg->twist.twist.linear.x;
+      odom_vel_(1) = msg->twist.twist.linear.y;
+      odom_vel_(2) = msg->twist.twist.linear.z;
+
+      //odom_acc_ = estimateAcc( msg );
+
+      odom_orient_.w() = msg->pose.pose.orientation.w;
+      odom_orient_.x() = msg->pose.pose.orientation.x;
+      odom_orient_.y() = msg->pose.pose.orientation.y;
+      odom_orient_.z() = msg->pose.pose.orientation.z;
+
+      have_odom_ = true;
   }
+
+  void EGOReplanFSM::odometryCallback_exp(const geometry_msgs::PoseStampedConstPtr& msg)
+  {
+        odom_pos_(0) = msg->pose.position.x;
+        odom_pos_(1) = msg->pose.position.y;
+        odom_pos_(2) = msg->pose.position.z;
+
+        odom_vel_(0) = 0;
+        odom_vel_(1) = 0;
+        odom_vel_(2) = 0;
+
+        //odom_acc_ = estimateAcc( msg );
+
+        odom_orient_.w() = msg->pose.orientation.w;
+        odom_orient_.x() = msg->pose.orientation.x;
+        odom_orient_.y() = msg->pose.orientation.y;
+        odom_orient_.z() = msg->pose.orientation.z;
+
+        have_odom_ = true;
+  }
+
 
   void EGOReplanFSM::changeFSMExecState(FSM_EXEC_STATE new_state, string pos_call)
   {
@@ -219,7 +273,7 @@ namespace ego_planner
     {
       if (!have_odom_)
       {
-        return;
+        // return;
       }
       if (!trigger_)
       {
@@ -351,10 +405,13 @@ namespace ego_planner
 
     //cout << "info->velocity_traj_=" << info->velocity_traj_.get_control_points() << endl;
 
-    start_pt_ = info->position_traj_.evaluateDeBoorT(t_cur);
-    start_vel_ = info->velocity_traj_.evaluateDeBoorT(t_cur);
-    start_acc_ = info->acceleration_traj_.evaluateDeBoorT(t_cur);
+    // start_pt_ = info->position_traj_.evaluateDeBoorT(t_cur);
+    // start_vel_ = info->velocity_traj_.evaluateDeBoorT(t_cur);
+    // start_acc_ = info->acceleration_traj_.evaluateDeBoorT(t_cur);
 
+      start_pt_ = odom_pos_;
+      start_vel_ = odom_vel_;
+      start_acc_.setZero();
     bool success = callReboundReplan(false, false);
 
     if (!success)

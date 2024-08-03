@@ -14,7 +14,7 @@ namespace cnuav {
 #define LOG(data) \
     do { \
         std::ofstream outfile; \
-        outfile.open("/home/tianbot/ROS/rosbag/log.txt", std::ios::app); \
+        outfile.open("/home/lty/ROS/rosbag/log.txt", std::ios::app); \
         outfile << data << std::endl; \
         outfile.close(); \
     } while(0)

@@ -283,8 +283,11 @@ namespace sbus_wrapper {
     }
 
     void SbusWrapper::cmdCallback(const quadrotor_msgs::ControlCommandConstPtr &msg) {
+        static int cnt = 0;
         if (!barm_) {
-            ROS_WARN("[ sbus_wrapper ] arm the drone first");
+            if(cnt == 0)
+                ROS_WARN("[ sbus_wrapper ] arm the drone first");
+            cnt++;cnt %= 100;
             return;
         }
         if (msg->control_mode != quadrotor_msgs::ControlCommand::BODY_RATES) {

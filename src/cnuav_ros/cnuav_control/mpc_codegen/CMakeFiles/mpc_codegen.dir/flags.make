@@ -6,5 +6,5 @@ CXX_FLAGS =
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/tianbot/ACADOtoolkit -I/home/tianbot/ACADOtoolkit/acado -I/home/tianbot/ACADOtoolkit/external_packages -I/home/tianbot/ACADOtoolkit/external_packages/qpOASES-3.2.0/include -I/home/tianbot/ACADOtoolkit/build 
+CXX_INCLUDES = -I/home/lty/ACADOtoolkit -I/home/lty/ACADOtoolkit/acado -I/home/lty/ACADOtoolkit/external_packages -I/home/lty/ACADOtoolkit/external_packages/qpOASES-3.2.0/include -I/home/lty/ACADOtoolkit/build 
 

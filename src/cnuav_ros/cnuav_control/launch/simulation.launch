@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="quad_name" default="hummingbird"/>
+<!-- <arg name="quad_names" default="hummingbird,quadrotor1,quadrotor2"/> --> 
+    <arg name="num_quad" default= "5"/>
+    <arg name="quad_name" default="hummingbird"/>
+    <param name="mode" value="true" />
+
 
   <arg name="mav_name" default="$(arg quad_name)"/>
   <arg name="model" value="$(find rotors_description)/urdf/mav_generic_odometry_sensor.gazebo"/>
@@ -39,7 +43,25 @@
     <arg name="y_init" value="$(arg y_init)"/>
   </include>
 
-    <node pkg="rosbag" type="record" name="record" args="/hummingbird/ground_truth/odometry /hummingbird/control_command -o /home/tianbot/record/simulation_record/cbf_clf.bag">
+
+      <!-- 启动 odometry_visualizer 节点 --> -->
+    <!-- <node name="odometry_visualizer" pkg="cnuav_control" type="odometry_visualizer" output="screen" /> -->
+
+  <!-- 启动 RViz -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find cnuav_control)/rviz/blanck.rviz" output="screen" />
+
+    <!-- 发布 world frame -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="world_to_odom_broadcaster" args="0 0 0 0 0 0 1 world odom" />
+
+
+
+    <node pkg="cnuav_control" type="odometry_visualizer" name="odometry_visualizer" output="screen">
+      <remap from="pose" to="/$(arg quad_name)/ground_truth/odometry" />
+      <remap from="marker" to="/$(arg quad_name)/pose/marker"/>
+      <remap from="traj" to="/$(arg quad_name)/trajectory"/>
+      <remap from="traj_marker" to="/$(arg quad_name)/traj_marker"/>
+
     </node>
-  
+
+
 </launch>

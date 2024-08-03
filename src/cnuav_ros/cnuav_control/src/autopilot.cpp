@@ -254,9 +254,36 @@ namespace cnuav {
         /// time statistics variables
         clock_t end = clock();
         float time = 1000.0 * float(end - start) / CLOCKS_PER_SEC;
+        
+        if(success){
+            // ROS_INFO("Elapsed time: %.2f ms", time);
+        }
+        else{
+            ROS_INFO("fail Elapsed time: %.2f ms", time);
+        }
+
 
         if (success) {
             Eigen::Matrix<float, CONTROL_DIM, 1> inputs = controller_->getInputs();
+
+
+
+                // 使用匿名函数打印矩阵
+                auto printEigenMatrix = [](const Eigen::Matrix<float, CONTROL_DIM, 1>& matrix) {
+                    std::ostringstream oss;
+                    oss << "inputs_: [";
+                    for (int i = 0; i < CONTROL_DIM; ++i) {
+                        oss << matrix(i);
+                        if (i < CONTROL_DIM - 1) {
+                            oss << ", ";
+                        }
+                    }
+                    oss << "]";
+                    ROS_INFO("%s", oss.str().c_str());
+                };
+
+                // 调用匿名函数打印矩阵
+                // printEigenMatrix(inputs_);
 
             bool valid = true;
             for (int i = 0; i < CONTROL_DIM; i++) {
@@ -403,7 +430,17 @@ namespace cnuav {
             traj_points_ = wrapper_->getTrajectory();
             start_time_ = ros::Time::now();
             finish_duration_ = traj_points_.back().time_from_start;
-            ROS_INFO_STREAM_COND(verbose_, prefix_ + "Trajectory");
+            ROS_INFO_STREAM_COND(verbose_, prefix_ + "now : Trajectory");
+            return true;
+        }
+
+                /// receive trajectory command
+        if (status_ == Trajectory && (flag & 1 << 5)) {
+            status_ = Trajectory;
+            traj_points_ = wrapper_->getTrajectory();
+            start_time_ = ros::Time::now();
+            finish_duration_ = traj_points_.back().time_from_start;
+            ROS_INFO_STREAM_COND(verbose_, prefix_ + "now : Trajectory");
             return true;
         }
 
@@ -685,6 +722,7 @@ namespace cnuav {
         finish_duration_ = ros::Duration(0.0);
     }
 
+    //轨迹点插值
     quadrotor_msgs::TrajectoryPoint Autopilot::interpolate(const quadrotor_msgs::TrajectoryPoint &p0,
                                                            const quadrotor_msgs::TrajectoryPoint &p1, float ratio) const {
 
@@ -868,55 +906,6 @@ quadrotor_msgs::TrajectoryPoint Autopilot::getCirclePoint(const ros::Duration &d
 }
 
 
-    // quadrotor_msgs::TrajectoryPoint Autopilot::getCirclePoint(const ros::Duration &duration) const {
-
-    //     float t = duration.toSec();
-
-    
-
-    //     quadrotor_msgs::TrajectoryPoint point;
-    //     point.time_from_start = duration;
-
-    //     float angular_acc = circle_velocity_ / circle_radius_ / circle_warmup_time_;
-    //     if (t < circle_warmup_time_) {
-    //         float augular_vel = angular_acc * t;
-    //         float rad = circle_start_rad_ + 1.0 / 2 * angular_acc * t * t;
-    //         float radius = circle_start_radius_ + (circle_radius_ - circle_start_radius_) * t / circle_warmup_time_;
-    //         float height = circle_start_height_ + (circle_height_ - circle_start_height_) * t / circle_warmup_time_;
-
-    //         point.pose.position.x = radius * cos(rad);
-    //         point.pose.position.y = radius * sin(rad);
-    //         point.pose.position.z = height;
-    //         point.velocity.linear.x = (circle_radius_ - circle_start_radius_) / circle_warmup_time_ * cos(rad) + radius * (-sin(rad) * augular_vel);
-    //         point.velocity.linear.y = (circle_radius_ - circle_start_radius_) / circle_warmup_time_ * sin(rad) + radius * cos(rad) * augular_vel;
-    //         point.velocity.linear.z = (circle_height_ - circle_start_height_) / circle_warmup_time_;
-
-    //         point.pose.orientation.w = 1.0;
-    //         point.pose.orientation.x = 0.0;
-    //         point.pose.orientation.y = 0.0;
-    //         point.pose.orientation.z = 0.0;
-
-    //     } else {
-    //         float augular_vel = circle_velocity_ / circle_radius_;
-    //         float rad = circle_start_rad_ + 1.0 / 2 * angular_acc * circle_warmup_time_ * circle_warmup_time_ + augular_vel * (t - circle_warmup_time_);
-    //         float radius = circle_radius_;
-    //         float height = circle_height_;
-
-    //         point.pose.position.x = radius * cos(rad);
-    //         point.pose.position.y = radius * sin(rad);
-    //         point.pose.position.z = height;
-    //         point.velocity.linear.x = radius * (-sin(rad) * augular_vel);
-    //         point.velocity.linear.y = radius * cos(rad) * augular_vel;
-    //         point.velocity.linear.z = 0.0;
-
-    //         point.pose.orientation.w = 1.0;
-    //         point.pose.orientation.x = 0.0;
-    //         point.pose.orientation.y = 0.0;
-    //         point.pose.orientation.z = 0.0;
-    //     }
-
-    //     return point;
-    // }
 
     quadrotor_msgs::TrajectoryPoint Autopilot::getTrajectoryPoint(const ros::Duration &duration) const {
 
@@ -955,13 +944,18 @@ quadrotor_msgs::TrajectoryPoint Autopilot::getCirclePoint(const ros::Duration &d
             quadrotor_msgs::TrajectoryPoint point;
             if (status_ == Circle) {
                 point = getCirclePoint(t);
+                // point = getTrajectoryPoint(t);
             } else if(status_ == Slowdown) {
                 point = getSlowdownPoint(t);
 
             }
+            else if(status_ == Trajectory){
+            point = getTrajectoryPoint(t);
+            }
             else{
 
                 point = getTrajectoryPoint(t);
+                
             }
 
             ref_states(0, i) = point.pose.position.x;
@@ -974,6 +968,11 @@ quadrotor_msgs::TrajectoryPoint Autopilot::getCirclePoint(const ros::Duration &d
             ref_states(7, i) = point.velocity.linear.x;
             ref_states(8, i) = point.velocity.linear.y;
             ref_states(9, i) = point.velocity.linear.z;
+
+
+            //     // 打印每个轨迹点的信息
+            // ROS_INFO("Trajectory point : x = %f, y = %f, z = %f",
+            //          ref_states(0, 0), ref_states(1, 0), ref_states(2, 0));
         }
     }
 

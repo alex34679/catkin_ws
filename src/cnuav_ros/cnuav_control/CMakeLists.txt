@@ -14,13 +14,16 @@ find_package(catkin REQUIRED COMPONENTS
         sensor_msgs
         quadrotor_msgs
         eigen_catkin
+        visualization_msgs
+        tf
         )
 
 find_package(
         yaml-cpp
 )
 
-catkin_package()
+catkin_package(
+)
 
 include_directories(
         ${catkin_INCLUDE_DIRS}
@@ -162,9 +165,12 @@ add_executable(cnuav_exp_four
         )
 
 add_executable(cnuav_exp_five
-src/node/uav5.cpp
+        src/node/uav5.cpp
 )
 
+add_executable(odometry_visualizer
+        src/node/visualization.cpp
+)
 
 target_link_libraries(cnuav_cbf_clf_exp_node
         cnuav_cbf_clf_exp_lib
@@ -198,6 +204,13 @@ target_link_libraries(cnuav_exp_four
 
 
 target_link_libraries(cnuav_exp_five
+        cnuav_cbf_clf_exp_lib
+        ${catkin_LIBRARIES}
+        ${YAML_CPP_LIBRARIES}
+        )
+
+
+target_link_libraries(odometry_visualizer
         cnuav_cbf_clf_exp_lib
         ${catkin_LIBRARIES}
         ${YAML_CPP_LIBRARIES}

@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <launch>
 
-    <arg name="quad_name" default="multi1"/>
+    <arg name="quad_name" default="multi3"/>
+    <param name="mode" value="false" />
 
     <include file="$(find vrpn_client_ros)/launch/sample.launch">
     </include>
@@ -15,7 +16,7 @@
 
         <node pkg="joy" type="joy_node" name="joy_node">
                     <param name="autorepeat_rate" value="10"/>
-                </node>
+        </node>
 
         <node pkg="sbus_wrapper" type="sbus_wrapper_node" name="sbus_wrapper_node" output="screen">
             <rosparam file="$(find sbus_wrapper)/config/$(arg quad_name).yaml" />
@@ -24,8 +25,26 @@
 
     </group>
 
-    <node pkg="rosbag" type="record" name="record" args="-a -o /home/tianbot/record/real_record/mpc.bag">
+
+  <!-- 启动 RViz -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find cnuav_control)/rviz/blanck.rviz" output="screen" />
+
+    <!-- 发布 world frame -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="world_to_odom_broadcaster" args="0 0 0 0 0 0 1 world odom" />
+
+
+
+    <node pkg="cnuav_control" type="odometry_visualizer" name="odometry_visualizer" output="screen">
+      <remap from="pose" to="/vrpn_client_node/$(arg quad_name)/pose" />
+      <remap from="marker" to="/$(arg quad_name)/pose/marker"/>
+      <remap from="traj" to="/$(arg quad_name)/trajectory"/>
+      <remap from="traj_marker" to="/$(arg quad_name)/traj_marker"/>
+
     </node>
+
+    <!-- <node pkg="rosbag" type="record" name="record" args="-a -o /home/lty/record/real_record/mpc.bag">
+    </node> -->
+
 
 
 </launch>

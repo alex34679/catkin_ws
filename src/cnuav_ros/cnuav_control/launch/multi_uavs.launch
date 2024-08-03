@@ -53,7 +53,7 @@
         </node>
 
     </group>
-    <node pkg="rosbag" type="record" name="record" args="-a -o /home/tianbot/record/real_record/multi_exp.bag">
+    <node pkg="rosbag" type="record" name="record" args="-a -o /home/lty/record/real_record/multi_exp.bag">
     </node>
 
     <node pkg="joy" type="joy_node" name="joy_node">

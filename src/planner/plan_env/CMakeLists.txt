@@ -17,7 +17,9 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   message_filters
 )
-
+find_package(
+        yaml-cpp
+)
 find_package(Eigen3 REQUIRED)
 find_package(PCL 1.7 REQUIRED)
 
@@ -35,6 +37,7 @@ include_directories(
     ${Eigen3_INCLUDE_DIRS} 
     ${PCL_INCLUDE_DIRS}
     ${OpenCV_INCLUDE_DIRS}
+    ${YAML_CPP_INCLUDE_DIRS}
 )
 
 link_directories(${PCL_LIBRARY_DIRS})
@@ -46,4 +49,5 @@ add_library( plan_env
 target_link_libraries( plan_env
     ${catkin_LIBRARIES} 
     ${PCL_LIBRARIES}
+    ${YAML_CPP_LIBRARIES}
     )  

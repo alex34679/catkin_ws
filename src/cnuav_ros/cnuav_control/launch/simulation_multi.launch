@@ -25,7 +25,6 @@
   <arg name="x_init_3" default="3.0"/>
   <arg name="y_init_3" default="0.0"/>
 
-
   <arg name="enable_logging" default="false" />
   <arg name="enable_ground_truth" default="true" />
   <arg name="enable_command_feedthrough" default="false"/>
@@ -80,7 +79,16 @@
     <arg name="y_init_3" value="$(arg y_init_3)"/>
   </include>
 
-    <node pkg="rosbag" type="record" name="record" args="/hummingbird1/ground_truth/odometry /hummingbird2/ground_truth/odometry /hummingbird3/ground_truth/odometry /hummingbird1/control_command /hummingbird2/control_command /hummingbird3/control_command -o /home/tianbot/record/simulation_record/cbf_clf.bag">
-    </node>
+
+      <!-- 启动 odometry_visualizer 节点 -->
+    <node name="odometry_visualizer" pkg="cnuav_control" type="odometry_visualizer" output="screen" />
+
+    <!-- 启动 RViz -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find cnuav_control)/rviz/blanck.rviz" output="screen" />
+
+    <!-- 发布 world frame -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="world_to_odom_broadcaster" args="0 0 0 0 0 0 1 world odom" />
+
+
 
 </launch>

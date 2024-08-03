@@ -1,6 +1,6 @@
 # crossfire wrapper parameters
 
-serial_port: /dev/ttyUSB2
+serial_port: /dev/ttyUSB0
 
 frequency: 120
 
@@ -10,10 +10,10 @@ max_pitch_rate: 4.363323
 max_yaw_rate: 4.363323
 max_thrust: 2.0
 
-drone_mass: 0.078
+drone_mass: 0.09
 
 
 
 # 有待进一步测量
-thrust_k: 480
-thrust_b: 117
+thrust_k: 338.3
+thrust_b: 36.7

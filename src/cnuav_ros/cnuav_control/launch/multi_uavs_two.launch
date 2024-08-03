@@ -44,7 +44,7 @@
 
     </group>
 
-    <node pkg="rosbag" type="record" name="record" args="-a -o /home/tianbot/record/real_record/multi_exp.bag">
+    <node pkg="rosbag" type="record" name="record" args="-a -o /home/lty/record/real_record/multi_exp.bag">
     </node>
 
 

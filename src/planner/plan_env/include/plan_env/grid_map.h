@@ -21,7 +21,7 @@
 #include <message_filters/sync_policies/approximate_time.h>
 #include <message_filters/sync_policies/exact_time.h>
 #include <message_filters/time_synchronizer.h>
-
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <plan_env/raycast.h>
 
 #define logit(x) (log((x) / (1 - (x))))
@@ -80,6 +80,8 @@ struct MappingParameters {
 
   /* active mapping */
   double unknown_flag_;
+
+  string config_file;
 };
 
 // intermediate mapping data for fusion
@@ -201,6 +203,8 @@ private:
   void raycastProcess();
   void clearAndInflateLocalMap();
 
+  void initialPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg);
+
   inline void inflatePoint(const Eigen::Vector3i& pt, int step, vector<Eigen::Vector3i>& pts);
   int setCacheOccupancy(Eigen::Vector3d pos, int occ);
   Eigen::Vector3d closetPointInMap(const Eigen::Vector3d& pt, const Eigen::Vector3d& camera_pt);
@@ -224,9 +228,12 @@ private:
   SynchronizerImageOdom sync_image_odom_;
 
   ros::Subscriber indep_cloud_sub_, indep_odom_sub_;
+  ros::Subscriber initial_pose_sub_;
   ros::Publisher map_pub_, map_inf_pub_;
   ros::Publisher unknown_pub_;
   ros::Timer occ_timer_, vis_timer_;
+
+  pcl::PointCloud<pcl::PointXYZ> global_cloud;
 
   //
   uniform_real_distribution<double> rand_noise_;

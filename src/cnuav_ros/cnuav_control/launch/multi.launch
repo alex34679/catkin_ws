@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- 定义无人机名称列表 -->
+    <arg name="quad_names" default="multi1, multi2"/>
+
+    <!-- 启动 VRPN 客户端 -->
+    <include file="$(find vrpn_client_ros)/launch/sample.launch">
+    </include>
+
+    <!-- 循环启动多个无人机节点 -->
+    <foreach ns="$(arg quad_names)" arg="quad_name">
+        <group ns="$(arg quad_name)">
+
+            <node pkg="cnuav_control" type="cnuav_cbf_clf_exp_node" name="cnuav_cbf_clf_exp_node" output="screen">
+                <remap from="pose" to="/vrpn_client_node/$(arg quad_name)/pose" />
+                <remap from="command" to="control_command" />
+            </node>
+
+            <node pkg="joy" type="joy_node" name="joy_node">
+                <param name="autorepeat_rate" value="10"/>
+            </node>
+
+            <node pkg="sbus_wrapper" type="sbus_wrapper_node" name="sbus_wrapper_node" output="screen">
+                <rosparam file="$(find sbus_wrapper)/config/$(arg quad_name).yaml" />
+                <remap from="pose" to="/vrpn_client_node/$(arg quad_name)/pose" />
+            </node>
+
+        </group>
+    </foreach>
+
+    <!-- 启动 odometry_visualizer 节点 -->
+    <node name="odometry_visualizer" pkg="cnuav_control" type="odometry_visualizer" output="screen" />
+
+    <!-- 启动 RViz -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find cnuav_control)/rviz/blanck.rviz" output="screen" />
+
+    <!-- 发布 world frame -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="world_to_odom_broadcaster" args="0 0 0 0 0 0 1 world odom" />
+
+    <!-- 启动 rosbag 记录
+    <node pkg="rosbag" type="record" name="record" args="-a -o /home/lty/record/real_record/mpc.bag">
+    </node> -->
+
+</launch>

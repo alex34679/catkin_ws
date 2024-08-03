@@ -229,6 +229,7 @@ namespace cnuav {
         traj_points_ = msg->points;
 
         flag_ |= 1 << 5;
+        // flag_ |= 1 << 4;
     }
 
 
