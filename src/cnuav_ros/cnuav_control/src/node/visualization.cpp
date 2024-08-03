@@ -7,14 +7,12 @@ OdometryVisualizer::OdometryVisualizer(const ros::NodeHandle& nh, const std::str
     std::string topic_name = "pose";
     std::string traj_topic_name = "traj";
     goal_sub_ = nh_.subscribe("/move_base_simple/goal", 1, &OdometryVisualizer::goalCallback, this);
-    // if (mode_) {
-    //     // topic_name = quad_name + "/ground_truth/odometry";
-    //     odom_sub_ = nh_.subscribe<nav_msgs::Odometry>(topic_name, 10, 
-    //                             [this](const nav_msgs::Odometry::ConstPtr& msg) {
-    //                                 this->odometryCallback_sim(msg);
-    //                             });
-    // } else {
-        // topic_name = "/vrpn_client_node/" + quad_name + "/pose";
+    if (mode_) {
+        odom_sub_ = nh_.subscribe<nav_msgs::Odometry>(topic_name, 10, 
+                                [this](const nav_msgs::Odometry::ConstPtr& msg) {
+                                    this->odometryCallback_sim(msg);
+                                });
+    } else {
         odom_sub_ = nh_.subscribe<geometry_msgs::PoseStamped>(topic_name, 10, 
                                 [this](const geometry_msgs::PoseStampedConstPtr& msg) {
                                     this->odometryCallback_exp(msg);

@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/lty/work_7.22/ustc/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen/mpc_codegen.cpp" "/home/lty/work_7.22/ustc/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen/CMakeFiles/mpc_codegen.dir/mpc_codegen.cpp.o"
+  "/home/lty/work_7.22/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen/mpc_codegen.cpp" "/home/lty/work_7.22/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen/CMakeFiles/mpc_codegen.dir/mpc_codegen.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 

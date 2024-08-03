@@ -39,6 +39,7 @@
       <remap from="marker" to="/$(arg quad_name)/pose/marker"/>
       <remap from="traj" to="/$(arg quad_name)/trajectory"/>
       <remap from="traj_marker" to="/$(arg quad_name)/traj_marker"/>
+      <param name="mode" value="false" />
 
     </node>
 

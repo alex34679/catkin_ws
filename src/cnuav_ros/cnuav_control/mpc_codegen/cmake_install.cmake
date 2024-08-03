@@ -1,4 +1,4 @@
-# Install script for directory: /home/lty/work_7.22/ustc/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen
+# Install script for directory: /home/lty/work_7.22/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/lty/work_7.22/ustc/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/lty/work_7.22/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

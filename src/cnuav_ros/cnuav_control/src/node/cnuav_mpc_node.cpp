@@ -10,10 +10,10 @@ int main(int argc, char **argv) {
     ros::NodeHandle nh;
     ros::NodeHandle pnh("~");
 
-    const std::string controller_config = "/home/lty/work_7.22/ustc/catkin_ws/src/cnuav_ros/cnuav_control/params/mpc_controller.yaml";
+    const std::string controller_config = "/home/lty/work_7.22/catkin_ws/src/cnuav_ros/cnuav_control/params/mpc_controller.yaml";
     cnuav::Controller *mpc_controller = new cnuav::MPCController(controller_config);
 
-    const std::string autopilot_config = "/home/lty/work_7.22/ustc/catkin_ws/src/cnuav_ros/cnuav_control/params/autopilot.yaml";
+    const std::string autopilot_config = "/home/lty/work_7.22/catkin_ws/src/cnuav_ros/cnuav_control/params/autopilot.yaml";
     cnuav::Autopilot autopilot(nh, pnh, autopilot_config);
 
     autopilot.setController(mpc_controller);
