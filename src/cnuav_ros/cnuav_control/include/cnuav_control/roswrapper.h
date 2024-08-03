@@ -27,6 +27,7 @@
 #include <gazebo_msgs/SetModelState.h>
 #include <ros/ros.h>
 #include <random> // 引入随机数生成器相关的头文件
+#include <geometry_msgs/PoseArray.h>
 
 namespace cnuav {
 
@@ -78,6 +79,8 @@ namespace cnuav {
 
         void trajCallback(const quadrotor_msgs::Trajectory::ConstPtr &msg);
 
+        void publishTrajectoryPoints();
+
         //void pathCallback(const nav_msgs::PathConstPtr &msg);
 
         void pointCallback(const geometry_msgs::PointConstPtr &msg);
@@ -126,6 +129,8 @@ namespace cnuav {
         ros::Publisher cmdPub_;
 
         ros::Publisher armPub_;
+
+        ros::Publisher pose_array_pub;
 
         ros::Subscriber traj_sub_;
         // TODO:

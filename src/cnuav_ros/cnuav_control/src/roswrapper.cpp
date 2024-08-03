@@ -181,6 +181,8 @@ namespace cnuav {
 
         armPub_ = nh_.advertise<std_msgs::Bool>("arm", 10);
 
+        pose_array_pub = nh_.advertise<geometry_msgs::PoseArray>("/pose_array", 1);
+
         traj_sub_ = nh_.subscribe("trajectory", 10, &ROSWrapper::trajCallback, this);
 
         //path_sub_ = nh_.subscribe("path", 10, &ROSWrapper::pathCallback, this);
@@ -228,8 +230,47 @@ namespace cnuav {
 
         traj_points_ = msg->points;
 
+        publishTrajectoryPoints();
+
         flag_ |= 1 << 5;
         // flag_ |= 1 << 4;
+    }
+
+    void ROSWrapper::publishTrajectoryPoints() {
+        int size = traj_points_.size();
+        int step = size / 10; // 计算采样步长
+
+        // 确保轨迹点足够多以采样10个点
+        if (size < 10) {
+            ROS_WARN("Not enough points to sample 10 points from the trajectory.");
+            return;
+        }
+
+        geometry_msgs::PoseArray pose_array;
+        pose_array.header.stamp = ros::Time::now();
+        pose_array.header.frame_id = "world"; // 设置适当的坐标系
+
+        for (int i = 0; i < size; i += step) {
+            geometry_msgs::Pose pose;
+            auto point = traj_points_[i];
+
+            pose.position.x = point.pose.position.x;
+            pose.position.y = point.pose.position.y;
+            pose.position.z = point.pose.position.z;
+            pose.orientation.w = point.pose.orientation.w;
+            pose.orientation.x = point.pose.orientation.x;
+            pose.orientation.y = point.pose.orientation.y;
+            pose.orientation.z = point.pose.orientation.z;
+
+            pose_array.poses.push_back(pose);
+
+            // 如果已经采样了10个点，退出循环
+            if (pose_array.poses.size() >= 10) {
+                break;
+            }
+        }
+
+        pose_array_pub.publish(pose_array);
     }
 
 
