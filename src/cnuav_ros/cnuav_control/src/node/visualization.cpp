@@ -8,16 +8,18 @@ OdometryVisualizer::OdometryVisualizer(const ros::NodeHandle& nh, const std::str
     std::string traj_topic_name = "traj";
     goal_sub_ = nh_.subscribe("/move_base_simple/goal", 1, &OdometryVisualizer::goalCallback, this);
     if (mode_) {
+        ROS_INFO("now mod is sim !!!");
         odom_sub_ = nh_.subscribe<nav_msgs::Odometry>(topic_name, 10, 
                                 [this](const nav_msgs::Odometry::ConstPtr& msg) {
                                     this->odometryCallback_sim(msg);
                                 });
     } else {
+        ROS_INFO("now mod is exp !!!");
         odom_sub_ = nh_.subscribe<geometry_msgs::PoseStamped>(topic_name, 10, 
                                 [this](const geometry_msgs::PoseStampedConstPtr& msg) {
                                     this->odometryCallback_exp(msg);
                                 });
-    // }
+    }
 
     traj_sub_ = nh_.subscribe("traj", 1, &OdometryVisualizer::trajCallback, this);
 
@@ -174,7 +176,7 @@ int main(int argc, char** argv)
     nh.getParam("mode", mode);
     
     ros::NodeHandle nh_global;
-    OdometryVisualizer visualizer(nh_global, quad_name, true);
+    OdometryVisualizer visualizer(nh_global, quad_name, mode);
 
     // ros::spin();
 
