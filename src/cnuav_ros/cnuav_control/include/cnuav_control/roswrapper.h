@@ -63,6 +63,9 @@ namespace cnuav {
 
         std::vector<GateState> getgateState();
         
+
+        Eigen::Quaterniond calculateQuaternion(const Eigen::Vector3d& cur_path, double fai);
+
         Eigen::Vector2f setModelState(const std::string& model_name);
 
 

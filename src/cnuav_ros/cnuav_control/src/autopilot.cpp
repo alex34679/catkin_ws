@@ -972,7 +972,7 @@ quadrotor_msgs::TrajectoryPoint Autopilot::getCirclePoint(const ros::Duration &d
 
             //     // 打印每个轨迹点的信息
             // ROS_INFO("Trajectory point : x = %f, y = %f, z = %f",
-            //          ref_states(0, 0), ref_states(1, 0), ref_states(2, 0));
+            //          ref_states(3, 0), ref_states(4, 0), ref_states(5, 0));
         }
     }
 

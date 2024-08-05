@@ -230,18 +230,33 @@ namespace cnuav {
 
         traj_points_ = msg->points;
 
+        for(auto &point : traj_points_){
+
+
+            Eigen::Vector3d now_a(point.acceleration.linear.x, point.acceleration.linear.y, point.acceleration.linear.z);
+
+            Eigen::Quaterniond res = calculateQuaternion(now_a, 0);
+
+            point.pose.orientation.w = res.w();
+            point.pose.orientation.x = res.x();
+            point.pose.orientation.y = res.y();
+            point.pose.orientation.z = res.z();
+
+        }
+
+
         publishTrajectoryPoints();
 
         flag_ |= 1 << 5;
-        // flag_ |= 1 << 4;
     }
 
     void ROSWrapper::publishTrajectoryPoints() {
+        int num = 10;
         int size = traj_points_.size();
-        int step = size / 10; // 计算采样步长
+        int step = size / num; // 计算采样步长
 
         // 确保轨迹点足够多以采样10个点
-        if (size < 10) {
+        if (size < num) {
             ROS_WARN("Not enough points to sample 10 points from the trajectory.");
             return;
         }
@@ -265,7 +280,7 @@ namespace cnuav {
             pose_array.poses.push_back(pose);
 
             // 如果已经采样了10个点，退出循环
-            if (pose_array.poses.size() >= 10) {
+            if (pose_array.poses.size() >= num) {
                 break;
             }
         }
@@ -387,6 +402,35 @@ namespace cnuav {
     bool ROSWrapper::startsWith(const std::string& str, const std::string& prefix) {
     return str.compare(0, prefix.size(), prefix) == 0;
     }
+    
+
+    Eigen::Quaterniond ROSWrapper::calculateQuaternion(const Eigen::Vector3d& cur_path, double fai) {  
+        const double g = 9.8;    
+        Eigen::Vector3d t = cur_path.head<3>(); // 使用Eigen的head方法获取前三个元素  
+        t[2] += g; // 更新z分量  
+
+        // 归一化t向量得到Z_b  
+        Eigen::Vector3d Z_b = t.normalized();  
+        // std::cout << "Z_b:\n" << Z_b << std::endl; 
+        // 计算X_c  
+        Eigen::Vector3d X_c(cos(fai), sin(fai), 0);  
+
+        // 计算Y_b  
+        Eigen::Vector3d Y_b = Z_b.cross(X_c).normalized();  
+        // std::cout << "Y_b:\n" << Y_b << std::endl;
+        // 计算X_b  
+        Eigen::Vector3d X_b = Y_b.cross(Z_b);  
+        
+        // std::cout << "X_b:\n" << X_b << std::endl;
+        // // 构造旋转矩阵  
+        Eigen::Matrix3d rota_matrix;  
+        rota_matrix << X_b, Y_b, Z_b;   
+
+        Eigen::Quaterniond quaternion(rota_matrix);
+
+        return quaternion;  
+    }
+
     
 
 }// namespace cnuav

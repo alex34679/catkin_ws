@@ -202,9 +202,9 @@ int main(int argc, char **argv) {
 void GenerateCollisionFreeTrajectory(quadrotor_common::Trajectory &trajectory) {
     double kExecLoopRate_ = 120.0;
 
-    const double max_vel = 0.5;
+    const double max_vel = 2.5;
     const double max_thrust = 10.0;
-    const double max_roll_pitch_rate = 2.5;
+    const double max_roll_pitch_rate = 4.5;
 
     std::vector<Eigen::Vector3d> way_points;
     // way_points.push_back(Eigen::Vector3d(initial_pose.pose.position.x, initial_pose.pose.position.y, initial_pose.pose.position.z));
