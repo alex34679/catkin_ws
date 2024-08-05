@@ -7,8 +7,8 @@ min_thrust: 2.0
 max_bodyrate: 3.0
 
 # weight matrix of state costs
-Q: [70.0, 70.0, z20.0, 10, 10, 10, 10, 1, 1, 1 ]
+Q: [70.0, 70.0, 200.0, 10, 10, 10, 10, 1, 1, 1 ]
 #位置，姿态（四元数），速度
 
 # weight matrix of control effort
-R: [ 0.10, 0.1, 0.1, 0.1 ]
+R: [ 1, 1, 1, 1 ]
