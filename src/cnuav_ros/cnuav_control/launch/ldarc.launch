@@ -12,6 +12,7 @@
         <node pkg="cnuav_control" type="cnuav_cbf_clf_exp_node" name="cnuav_cbf_clf_exp_node" output="screen">
             <remap from="pose" to="/vrpn_client_node/$(arg quad_name)/pose" />
             <remap from="command" to="control_command" />
+            <param name="mpc" value="true" />
         </node>
 
         <node pkg="joy" type="joy_node" name="joy_node">

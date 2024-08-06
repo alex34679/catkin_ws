@@ -29,6 +29,9 @@
 #include <random> // 引入随机数生成器相关的头文件
 #include <geometry_msgs/PoseArray.h>
 
+#include "cnuav_control/position_controller.h"
+#include "cnuav_control/position_controller_params.h"
+
 namespace cnuav {
 
 
@@ -70,6 +73,8 @@ namespace cnuav {
 
 
         void pubCmdThrustRates(const Eigen::Ref<const Eigen::Matrix<float, CONTROL_DIM, 1>> &cmd_thrust_rates);
+
+        void pubCmd(quadrotor_msgs::ControlCommand cmd);
 
         /// send disarm message to rpg_rotors_interface or sbus_interface
         void pubArmMsg(bool barm);

@@ -20,6 +20,17 @@ namespace cnuav {
 
         prefix_ = "[" + nh_.getNamespace() + "] ";
         mainloopTimer_ = nh_.createTimer(ros::Duration(1.0 / frequency_), &Autopilot::mainLoop, this);
+
+        base_controller_params_.loadParameters(pnh);
+
+        pnh.getParam("mpc", if_mpc);
+
+        if(if_mpc){
+            ROS_INFO_ONCE("now control mod is MPC !!!");
+        }
+        else{
+            ROS_INFO_ONCE("now control mod is position control !!!");
+        }
     }
 
     bool Autopilot::loadParams(const std::string &filename) {
@@ -243,6 +254,43 @@ namespace cnuav {
 
         calRefStates(time_from_start, ref_states);
 
+        float dt = controller_->getDt();
+        ros::Duration t = time_from_start + ros::Duration(dt);
+        auto ref_point = getTrajectoryPoint(t);
+
+        quadrotor_common::TrajectoryPoint reference_trajectory_;
+        reference_trajectory_.position.x() = ref_point.pose.position.x;
+        reference_trajectory_.position.y() = ref_point.pose.position.y; 
+        reference_trajectory_.position.z() = ref_point.pose.position.z; 
+
+        reference_trajectory_.velocity.x() = ref_point.velocity.linear.x;
+        reference_trajectory_.velocity.y() = ref_point.velocity.linear.y;
+        reference_trajectory_.velocity.z() = ref_point.velocity.linear.z;
+
+        reference_trajectory_.acceleration.x() = ref_point.acceleration.linear.x;
+        reference_trajectory_.acceleration.y() = ref_point.acceleration.linear.y;
+        reference_trajectory_.acceleration.z() = ref_point.acceleration.linear.z;
+        
+        quadrotor_common::QuadStateEstimate state_estimate;
+        /// [ p_x p_y p_z v_x v_y v_z q_w q_x q_y q_z ]  false
+        state_estimate.position.x() = current_state_[0];
+        state_estimate.position.y() = current_state_[1];
+        state_estimate.position.z() = current_state_[2];
+
+        state_estimate.orientation.w() = current_state_[3];
+        state_estimate.orientation.x() = current_state_[4];
+        state_estimate.orientation.y() = current_state_[5];
+        state_estimate.orientation.z() = current_state_[6];
+
+        state_estimate.velocity.x() = current_state_[7];
+        state_estimate.velocity.y() = current_state_[8];
+        state_estimate.velocity.z() = current_state_[9];
+
+
+        cmd = pos_controller.run(state_estimate, reference_trajectory_,
+                                 base_controller_params_);
+
+
         controller_->setRefStates(ref_states);
 
         controller_->preControlProcess();
@@ -306,7 +354,16 @@ namespace cnuav {
 #ifdef EXPERIMENT
         inputs_ += calSteadyCompensation();
 #endif
-        wrapper_->pubCmdThrustRates(inputs_);
+
+        if(if_mpc){
+            wrapper_->pubCmdThrustRates(inputs_);
+        }
+        else{
+            quadrotor_msgs::ControlCommand ros_cmd = cmd.toRosMessage();
+            wrapper_->pubCmd(ros_cmd);
+        }
+
+
         controller_->postControlProcess();
     }
 
@@ -820,51 +877,77 @@ quadrotor_msgs::TrajectoryPoint Autopilot::getCirclePoint(const ros::Duration &d
     // 计算减速时间
     float deceleration = (circle_velocity_ - slow_down_velocity_) / slow_down_time_;
 
-     if (t < circle_warmup_time_) {
-            float augular_vel = angular_acc * t;
-            float rad = circle_start_rad_ + 1.0 / 2 * angular_acc * t * t;
-            float radius = circle_start_radius_ + (circle_radius_ - circle_start_radius_) * t / circle_warmup_time_;
-            float height = circle_start_height_ + (circle_height_ - circle_start_height_) * t / circle_warmup_time_;
+    if (t < circle_warmup_time_) {
+        float augular_vel = angular_acc * t;
+        float rad = circle_start_rad_ + 1.0 / 2 * angular_acc * t * t;
+        float radius = circle_start_radius_ + (circle_radius_ - circle_start_radius_) * t / circle_warmup_time_;
+        float height = circle_start_height_ + (circle_height_ - circle_start_height_) * t / circle_warmup_time_;
 
-            point.pose.position.x = radius * cos(rad);
-            point.pose.position.y = radius * sin(rad);
-            point.pose.position.z = height;
-            point.velocity.linear.x = (circle_radius_ - circle_start_radius_) / circle_warmup_time_ * cos(rad) + radius * (-sin(rad) * augular_vel);
-            point.velocity.linear.y = (circle_radius_ - circle_start_radius_) / circle_warmup_time_ * sin(rad) + radius * cos(rad) * augular_vel;
-            point.velocity.linear.z = (circle_height_ - circle_start_height_) / circle_warmup_time_;
+        point.pose.position.x = radius * cos(rad);
+        point.pose.position.y = radius * sin(rad);
+        point.pose.position.z = height;
+        point.velocity.linear.x = (circle_radius_ - circle_start_radius_) / circle_warmup_time_ * cos(rad) + radius * (-sin(rad) * augular_vel);
+        point.velocity.linear.y = (circle_radius_ - circle_start_radius_) / circle_warmup_time_ * sin(rad) + radius * cos(rad) * augular_vel;
+        point.velocity.linear.z = (circle_height_ - circle_start_height_) / circle_warmup_time_;
 
-            point.pose.orientation.w = 1.0;
-            point.pose.orientation.x = 0.0;
-            point.pose.orientation.y = 0.0;
-            point.pose.orientation.z = 0.0;
+        point.acceleration.linear.x = -radius * angular_acc * sin(rad);
+        point.acceleration.linear.y = radius * angular_acc * cos(rad);
+        point.acceleration.linear.z = 0.0;
 
-        } else if(t< total_time_two_circles){
-            float augular_vel = circle_velocity_ / circle_radius_;
-            float rad = circle_start_rad_ + 1.0 / 2 * angular_acc * circle_warmup_time_ * circle_warmup_time_ + augular_vel * (t - circle_warmup_time_);
-            float radius = circle_radius_;
-            float height = circle_height_;
+        Eigen::Vector3d now_a(point.acceleration.linear.x, point.acceleration.linear.y, point.acceleration.linear.z);
 
-            point.pose.position.x = radius * cos(rad);
-            point.pose.position.y = radius * sin(rad);
-            point.pose.position.z = height;
-            point.velocity.linear.x = radius * (-sin(rad) * augular_vel);
-            point.velocity.linear.y = radius * cos(rad) * augular_vel;
-            point.velocity.linear.z = 0.0;
+        Eigen::Quaterniond res = wrapper_->calculateQuaternion(now_a, 0);
 
-            point.pose.orientation.w = 1.0;
-            point.pose.orientation.x = 0.0;
-            point.pose.orientation.y = 0.0;
-            point.pose.orientation.z = 0.0;
+        point.pose.orientation.w = res.w();
+        point.pose.orientation.x = res.x();
+        point.pose.orientation.y = res.y();
+        point.pose.orientation.z = res.z();
 
-        } else if (t < total_time_two_circles + slow_down_time_) {
+        // point.pose.orientation.w = 1.0;
+        // point.pose.orientation.x = 0.0;
+        // point.pose.orientation.y = 0.0;
+        // point.pose.orientation.z = 0.0;
 
+    } else if (t < total_time_two_circles) {
+        float augular_vel = circle_velocity_ / circle_radius_;
+        float rad = circle_start_rad_ + 1.0 / 2 * angular_acc * circle_warmup_time_ * circle_warmup_time_ + augular_vel * (t - circle_warmup_time_);
+        float radius = circle_radius_;
+        float height = circle_height_;
+
+        point.pose.position.x = radius * cos(rad);
+        point.pose.position.y = radius * sin(rad);
+        point.pose.position.z = height;
+        point.velocity.linear.x = radius * (-sin(rad) * augular_vel);
+        point.velocity.linear.y = radius * cos(rad) * augular_vel;
+        point.velocity.linear.z = 0.0;
+
+        point.acceleration.linear.x = -radius * augular_vel * augular_vel * cos(rad);
+        point.acceleration.linear.y = -radius * augular_vel * augular_vel * sin(rad);
+        point.acceleration.linear.z = 0.0;
+
+
+        Eigen::Vector3d now_a(point.acceleration.linear.x, point.acceleration.linear.y, point.acceleration.linear.z);
+
+        Eigen::Quaterniond res = wrapper_->calculateQuaternion(now_a, 0);
+
+        point.pose.orientation.w = res.w();
+        point.pose.orientation.x = res.x();
+        point.pose.orientation.y = res.y();
+        point.pose.orientation.z = res.z();
+
+        // point.pose.orientation.w = 1.0;
+        // point.pose.orientation.x = 0.0;
+        // point.pose.orientation.y = 0.0;
+        // point.pose.orientation.z = 0.0;
+
+    } else if (t < total_time_two_circles + slow_down_time_) {
         float elapsed_time = t - total_time_two_circles;
         float current_velocity = circle_velocity_ - deceleration * elapsed_time;
         float angular_vel = current_velocity / circle_radius_;
         
         float total_elapsed_time = total_time_two_circles + elapsed_time;
         float rad = circle_start_rad_ + 0.5 * angular_acc * circle_warmup_time_ * circle_warmup_time_ 
-                    + (circle_velocity_/circle_radius_) * (total_time_two_circles-circle_warmup_time_)
+                    + (circle_velocity_ / circle_radius_) * (total_time_two_circles - circle_warmup_time_)
                     + circle_velocity_ * elapsed_time - 0.5 * deceleration * elapsed_time * elapsed_time;
 
         point.pose.position.x = circle_radius_ * cos(rad);
@@ -874,27 +957,43 @@ quadrotor_msgs::TrajectoryPoint Autopilot::getCirclePoint(const ros::Duration &d
         point.velocity.linear.y = circle_radius_ * cos(rad) * angular_vel;
         point.velocity.linear.z = 0.0;
 
-        point.pose.orientation.w = 1.0;
-        point.pose.orientation.x = 0.0;
-        point.pose.orientation.y = 0.0;
-        point.pose.orientation.z = 0.0;
+        point.acceleration.linear.x = -circle_radius_ * deceleration * sin(rad);
+        point.acceleration.linear.y = circle_radius_ * deceleration * cos(rad);
+        point.acceleration.linear.z = 0.0;
+
+
+        Eigen::Vector3d now_a(point.acceleration.linear.x, point.acceleration.linear.y, point.acceleration.linear.z);
+
+        Eigen::Quaterniond res = wrapper_->calculateQuaternion(now_a, 0);
+
+        point.pose.orientation.w = res.w();
+        point.pose.orientation.x = res.x();
+        point.pose.orientation.y = res.y();
+        point.pose.orientation.z = res.z();
+        // point.pose.orientation.w = 1.0;
+        // point.pose.orientation.x = 0.0;
+        // point.pose.orientation.y = 0.0;
+        // point.pose.orientation.z = 0.0;
 
     } else {
         // 保持在slow_down_velocity_，继续圆周飞行
         float elapsed_time = t - total_time_two_circles - slow_down_time_;
         float angular_vel = slow_down_velocity_ / circle_radius_;
         float rad = circle_start_rad_ + 0.5 * angular_acc * circle_warmup_time_ * circle_warmup_time_ 
-                    + (circle_velocity_/circle_radius_) * (total_time_two_circles-circle_warmup_time_)
+                    + (circle_velocity_ / circle_radius_) * (total_time_two_circles - circle_warmup_time_)
                     + circle_velocity_ * slow_down_time_ - 0.5 * deceleration * slow_down_time_ *  slow_down_time_
-                    + slow_down_velocity_/circle_radius_* elapsed_time;
+                    + slow_down_velocity_ / circle_radius_ * elapsed_time;
 
-        
         point.pose.position.x = circle_radius_ * cos(rad);
         point.pose.position.y = circle_radius_ * sin(rad);
         point.pose.position.z = circle_height_;
         point.velocity.linear.x = circle_radius_ * (-sin(rad) * angular_vel);
         point.velocity.linear.y = circle_radius_ * cos(rad) * angular_vel;
         point.velocity.linear.z = 0.0;
+
+        point.acceleration.linear.x = 0.0;
+        point.acceleration.linear.y = 0.0;
+        point.acceleration.linear.z = 0.0;
 
         point.pose.orientation.w = 1.0;
         point.pose.orientation.x = 0.0;

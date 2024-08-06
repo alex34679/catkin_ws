@@ -61,6 +61,8 @@
              <remap from="pose" to="ground_truth/odometry" />
              <remap from="command" to="control_command" />
              <remap from="arm" to="bridge/arm" />
+             <param name="mpc" value="true" />
+             <rosparam file="$(find cnuav_control)/params/position_controller.yaml" />
         </node>
 
         <node pkg="joy" type="joy_node" name="joy_node">

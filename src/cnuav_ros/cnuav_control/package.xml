@@ -17,6 +17,7 @@
   <depend>nav_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>quadrotor_msgs</depend>
+  <depend>quadrotor_common</depend>
 
   <build_depend>visualization_msgs</build_depend>
   <build_depend>tf</build_depend>

@@ -9,6 +9,9 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <fstream>
 
+#include "cnuav_control/position_controller.h"
+#include "cnuav_control/position_controller_params.h"
+
 namespace cnuav {
 
 
@@ -178,12 +181,20 @@ namespace cnuav {
         float raw_radius;
         float raw_vel;
 
+        bool if_mpc;
+
+        quadrotor_common::ControlCommand cmd;
+
         ros::NodeHandle nh_;
         ros::NodeHandle pnh_;
 
         std::string prefix_;
 
         ros::Timer mainloopTimer_;
+
+        position_controller::PositionController pos_controller;
+
+        position_controller::PositionControllerParams base_controller_params_;
     };
 
 }// namespace cnuav

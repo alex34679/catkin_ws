@@ -164,6 +164,23 @@ namespace cnuav {
         cmdPub_.publish(cmd);
     }
 
+    void ROSWrapper::pubCmd(quadrotor_msgs::ControlCommand cmd) {
+        // 使用传入的cmd进行操作
+        quadrotor_msgs::ControlCommand pos_cmd = cmd;
+
+        // 设置pos_cmd的其他字段
+        pos_cmd.header.frame_id = "world";
+        static int cnt = 0;
+        pos_cmd.header.seq = cnt++;
+        pos_cmd.header.stamp = ros::Time::now();
+        pos_cmd.control_mode = 2; // body rates
+        pos_cmd.armed = true;
+
+        // 发布pos_cmd
+        cmdPub_.publish(pos_cmd);
+    }
+
+
     void ROSWrapper::pubArmMsg(bool barm) {
 
         std_msgs::Bool msg;

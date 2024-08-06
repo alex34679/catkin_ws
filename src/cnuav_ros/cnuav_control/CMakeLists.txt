@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
         nav_msgs
         sensor_msgs
         quadrotor_msgs
+        quadrotor_common
         eigen_catkin
         visualization_msgs
         tf
@@ -75,6 +76,7 @@ add_library(cnuav_cbf_clf_sim_lib
         src/roswrapper.cpp
         src/mpc/mpc.cpp
         src/velfilter.cpp
+        src/position_controller.cpp
         )
 
 target_link_libraries(cnuav_cbf_clf_sim_lib
@@ -133,6 +135,7 @@ add_library(cnuav_cbf_clf_exp_lib
         src/roswrapper.cpp
         src/mpc/mpc.cpp
         src/velfilter.cpp
+        src/position_controller.cpp
         )
 
 target_link_libraries(cnuav_cbf_clf_exp_lib
