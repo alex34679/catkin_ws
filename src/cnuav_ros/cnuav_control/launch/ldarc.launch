@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 
-    <arg name="quad_name" default="multi3"/>
+    <arg name="quad_name" default="yzh"/>
     <param name="mode" value="false" />
 
     <include file="$(find vrpn_client_ros)/launch/sample.launch">
@@ -11,7 +11,7 @@
 
         <node pkg="cnuav_control" type="cnuav_cbf_clf_exp_node" name="cnuav_cbf_clf_exp_node" output="screen">
             <remap from="pose" to="/vrpn_client_node/$(arg quad_name)/pose" />
-            <remap from="command" to="control_command" />
+            <remap from="command" to="control_command/temp" />
             <param name="mpc" value="true" />
         </node>
 

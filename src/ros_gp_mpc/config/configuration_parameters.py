@@ -64,6 +64,11 @@ class ModelFitConfig:
         "payload": False,
         "motor_noise": True
     }
+    
+    # ds_name = "gazebo_dataset"
+    # ds_metadata = {
+    #     "gazebo": "default",
+    # }
 
     # ds_metadata = {
     #     "gazebo": "default",

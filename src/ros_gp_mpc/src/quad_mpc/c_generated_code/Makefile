@@ -36,28 +36,28 @@
 
 # model
 MODEL_SRC=
-MODEL_SRC+= my_quad_model/my_quad_expl_ode_fun.c
-MODEL_SRC+= my_quad_model/my_quad_expl_vde_forw.c
-MODEL_SRC+= my_quad_model/my_quad_expl_vde_adj.c
+MODEL_SRC+= hummingbird_model/hummingbird_expl_ode_fun.c
+MODEL_SRC+= hummingbird_model/hummingbird_expl_vde_forw.c
+MODEL_SRC+= hummingbird_model/hummingbird_expl_vde_adj.c
 MODEL_OBJ := $(MODEL_SRC:.c=.o)
 
 # optimal control problem - mostly CasADi exports
 OCP_SRC=
 
-OCP_SRC+= acados_solver_my_quad.c
+OCP_SRC+= acados_solver_hummingbird.c
 OCP_OBJ := $(OCP_SRC:.c=.o)
 
 # for sim solver
-SIM_SRC= acados_sim_solver_my_quad.c
+SIM_SRC= acados_sim_solver_hummingbird.c
 SIM_OBJ := $(SIM_SRC:.c=.o)
 
 # for target example
-EX_SRC= main_my_quad.c
+EX_SRC= main_hummingbird.c
 EX_OBJ := $(EX_SRC:.c=.o)
 EX_EXE := $(EX_SRC:.c=)
 
 # for target example_sim
-EX_SIM_SRC= main_sim_my_quad.c
+EX_SIM_SRC= main_sim_hummingbird.c
 EX_SIM_OBJ := $(EX_SIM_SRC:.c=.o)
 EX_SIM_EXE := $(EX_SIM_SRC:.c=)
 
@@ -98,8 +98,8 @@ LDLIBS+= -lm
 LDLIBS+= 
 
 # libraries
-LIBACADOS_SOLVER=libacados_solver_my_quad.so
-LIBACADOS_OCP_SOLVER=libacados_ocp_solver_my_quad.so
+LIBACADOS_SOLVER=libacados_solver_hummingbird.so
+LIBACADOS_OCP_SOLVER=libacados_ocp_solver_hummingbird.so
 LIBACADOS_SIM_SOLVER=lib$(SIM_SRC:.c=.so)
 
 # virtual targets
@@ -134,7 +134,7 @@ ocp_cython_c: ocp_shared_lib
 	-o acados_ocp_solver_pyx.c \
 	-I $(INCLUDE_PATH)/../interfaces/acados_template/acados_template \
 	$(INCLUDE_PATH)/../interfaces/acados_template/acados_template/acados_ocp_solver_pyx.pyx \
-	-I /home/lty/rpg/data_driven_mpc/ros_gp_mpc/src/quad_mpc/c_generated_code \
+	-I /home/lty/work_7.22/catkin_ws/src/ros_gp_mpc/src/quad_mpc/c_generated_code \
 
 ocp_cython_o: ocp_cython_c
 	$(CC) $(ACADOS_FLAGS) -c -O2 \
@@ -152,7 +152,7 @@ ocp_cython: ocp_cython_o
 	-o acados_ocp_solver_pyx.so \
 	-Wl,-rpath=$(LIB_PATH) \
 	acados_ocp_solver_pyx.o \
-	$(abspath .)/libacados_ocp_solver_my_quad.so \
+	$(abspath .)/libacados_ocp_solver_hummingbird.so \
 	$(LDFLAGS) $(LDLIBS)
 
 # Sim Cython targets
@@ -161,7 +161,7 @@ sim_cython_c: sim_shared_lib
 	-o acados_sim_solver_pyx.c \
 	-I $(INCLUDE_PATH)/../interfaces/acados_template/acados_template \
 	$(INCLUDE_PATH)/../interfaces/acados_template/acados_template/acados_sim_solver_pyx.pyx \
-	-I /home/lty/rpg/data_driven_mpc/ros_gp_mpc/src/quad_mpc/c_generated_code \
+	-I /home/lty/work_7.22/catkin_ws/src/ros_gp_mpc/src/quad_mpc/c_generated_code \
 
 sim_cython_o: sim_cython_c
 	$(CC) $(ACADOS_FLAGS) -c -O2 \
@@ -179,7 +179,7 @@ sim_cython: sim_cython_o
 	-o acados_sim_solver_pyx.so \
 	-Wl,-rpath=$(LIB_PATH) \
 	acados_sim_solver_pyx.o \
-	$(abspath .)/libacados_sim_solver_my_quad.so \
+	$(abspath .)/libacados_sim_solver_hummingbird.so \
 	$(LDFLAGS) $(LDLIBS)
 
 clean:
@@ -192,13 +192,13 @@ clean_ocp_shared_lib:
 	$(RM) $(OCP_OBJ)
 
 clean_ocp_cython:
-	$(RM) libacados_ocp_solver_my_quad.so
-	$(RM) acados_solver_my_quad.o
+	$(RM) libacados_ocp_solver_hummingbird.so
+	$(RM) acados_solver_hummingbird.o
 	$(RM) acados_ocp_solver_pyx.so
 	$(RM) acados_ocp_solver_pyx.o
 
 clean_sim_cython:
-	$(RM) libacados_sim_solver_my_quad.so
-	$(RM) acados_sim_solver_my_quad.o
+	$(RM) libacados_sim_solver_hummingbird.so
+	$(RM) acados_sim_solver_hummingbird.o
 	$(RM) acados_sim_solver_pyx.so
 	$(RM) acados_sim_solver_pyx.o

@@ -20,6 +20,13 @@ import numpy as np
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
+import sys
+import os
+
+# Add the absolute path to the directory containing 'src' to sys.path
+sys.path.append('/home/lty/work_7.22/catkin_ws/src/ros_gp_mpc')
+
+
 from src.utils.utils import safe_mkdir_recursive, load_pickled_models
 from src.utils.utils import distance_maximizing_points, get_model_dir_and_file
 from src.utils.utils import sample_random_points

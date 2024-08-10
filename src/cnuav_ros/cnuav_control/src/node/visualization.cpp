@@ -1,9 +1,29 @@
 #include "cnuav_control/visualization.h"
 
 
-OdometryVisualizer::OdometryVisualizer(const ros::NodeHandle& nh, const std::string& quad_name, const bool mode)
-    : nh_(nh), mode_(mode)
+OdometryVisualizer::OdometryVisualizer(const ros::NodeHandle& nh, const ros::NodeHandle& pnh)
+    : nh_(nh), pnh_(pnh)
 {
+
+    // 获取 quad_name 参数并打印日志
+    if (!pnh_.getParam("quad_name", quad_name)) {
+        ROS_WARN("Parameter 'quad_name' not found. Using default value.");
+    }
+
+    // 获取 mode 参数并打印日志
+    if (!pnh_.getParam("mode", mode_)) {
+        ROS_WARN("Parameter 'mode' not found. Using default value.");
+    }
+
+
+    pnh_.param("mesh_resource", mesh_resource, std::string("package://cnuav_control/meshes/hummingbird.mesh"));
+
+
+    pnh_.param("color/r", color_r, 1.0);
+    pnh_.param("color/g", color_g, 0.0);
+    pnh_.param("color/b", color_b, 0.0);
+    pnh_.param("color/a", color_a, 1.0);
+
     std::string topic_name = "pose";
     std::string traj_topic_name = "traj";
     goal_sub_ = nh_.subscribe("/move_base_simple/goal", 1, &OdometryVisualizer::goalCallback, this);
@@ -57,6 +77,10 @@ OdometryVisualizer::OdometryVisualizer(const ros::NodeHandle& nh, const std::str
 
 
     setColor(traj_marker_.color, 2,4);
+
+
+
+    meshPub   = nh_.advertise<visualization_msgs::Marker>("robot",               100, true);  
 }
 
 
@@ -70,6 +94,33 @@ void OdometryVisualizer::odometryCallback_sim(const nav_msgs::Odometry::ConstPtr
     point.z = msg->pose.pose.position.z;
     marker_.points.push_back(point);
     marker_pub_.publish(marker_);
+
+
+        // Mesh model                                                  
+    meshROS.header.frame_id = "world";
+    meshROS.header.stamp = ros::Time::now(); 
+    meshROS.ns = "mesh";
+    meshROS.id = 0;
+    meshROS.type = visualization_msgs::Marker::MESH_RESOURCE;
+    meshROS.action = visualization_msgs::Marker::ADD;
+    meshROS.pose.position.x = msg->pose.pose.position.x;
+    meshROS.pose.position.y = msg->pose.pose.position.y;
+    meshROS.pose.position.z = msg->pose.pose.position.z;
+
+    meshROS.pose.orientation.w = msg->pose.pose.orientation.w;
+    meshROS.pose.orientation.x = msg->pose.pose.orientation.x;
+    meshROS.pose.orientation.y = msg->pose.pose.orientation.y;
+    meshROS.pose.orientation.z = msg->pose.pose.orientation.z;
+    meshROS.scale.x = 1.0;
+    meshROS.scale.y = 1.0;
+    meshROS.scale.z = 1.0;
+    meshROS.color.a = color_a;
+    meshROS.color.r = color_r;
+    meshROS.color.g = color_g;
+    meshROS.color.b = color_b;
+    meshROS.mesh_resource = mesh_resource;
+    meshROS.mesh_use_embedded_materials = false;
+    meshPub.publish(meshROS);        
 }
 
 void OdometryVisualizer::odometryCallback_exp(const geometry_msgs::PoseStampedConstPtr& msg)
@@ -81,7 +132,37 @@ void OdometryVisualizer::odometryCallback_exp(const geometry_msgs::PoseStampedCo
     point.z = msg->pose.position.z;
     marker_.points.push_back(point);
     marker_pub_.publish(marker_);
+
+
+
+        // Mesh model                                                  
+    meshROS.header.frame_id = "world";
+    meshROS.header.stamp = ros::Time::now(); 
+    meshROS.ns = "mesh";
+    meshROS.id = 0;
+    meshROS.type = visualization_msgs::Marker::MESH_RESOURCE;
+    meshROS.action = visualization_msgs::Marker::ADD;
+    meshROS.pose.position.x = msg->pose.position.x;
+    meshROS.pose.position.y = msg->pose.position.y;
+    meshROS.pose.position.z = msg->pose.position.z;
+
+    meshROS.pose.orientation.w = msg->pose.orientation.w;
+    meshROS.pose.orientation.x = msg->pose.orientation.x;
+    meshROS.pose.orientation.y = msg->pose.orientation.y;
+    meshROS.pose.orientation.z = msg->pose.orientation.z;
+    meshROS.scale.x = 2.0;
+    meshROS.scale.y = 2.0;
+    meshROS.scale.z = 2.0;
+    meshROS.color.a = color_a;
+    meshROS.color.r = color_r;
+    meshROS.color.g = color_g;
+    meshROS.color.b = color_b;
+    meshROS.mesh_resource = mesh_resource;
+    meshPub.publish(meshROS);   
 }
+
+
+
 
 void OdometryVisualizer::setColor(std_msgs::ColorRGBA& color, int index, int total)
 {
@@ -167,16 +248,11 @@ void OdometryVisualizer::goalCallback(const geometry_msgs::PoseStamped::ConstPtr
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "odometry_visualizer");
-    ros::NodeHandle nh("~"); 
+    ros::NodeHandle pnh("~"); 
 
-    std::string quad_name;
-    nh.getParam("quad_name", quad_name);
 
-    bool mode;
-    nh.getParam("mode", mode);
-    
     ros::NodeHandle nh_global;
-    OdometryVisualizer visualizer(nh_global, quad_name, mode);
+    OdometryVisualizer visualizer(nh_global,pnh);
 
     // ros::spin();
 
@@ -190,7 +266,7 @@ int main(int argc, char** argv)
     transform.setRotation(q);
 
     ros::Rate rate(10.0);
-    while (nh.ok()) {
+    while (pnh.ok()) {
         br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "world", "base_link"));
         ros::spinOnce();
         rate.sleep();

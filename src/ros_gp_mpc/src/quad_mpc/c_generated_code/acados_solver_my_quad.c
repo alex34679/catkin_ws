@@ -375,7 +375,7 @@ void my_quad_acados_setup_nlp_in(my_quad_solver_capsule* capsule, const int N, d
         my_quad_acados_update_time_steps(capsule, N, new_time_steps);
     }
     else
-    {double time_step = 0.1;
+    {double time_step = 0.05;
         for (int i = 0; i < N; i++)
         {
             ocp_nlp_in_set(nlp_config, nlp_dims, nlp_in, i, "Ts", &time_step);
@@ -401,15 +401,12 @@ void my_quad_acados_setup_nlp_in(my_quad_solver_capsule* capsule, const int N, d
     W_0[0+(NY0) * 0] = 10;
     W_0[1+(NY0) * 1] = 10;
     W_0[2+(NY0) * 2] = 10;
-    W_0[4+(NY0) * 4] = 0.1;
-    W_0[5+(NY0) * 5] = 0.1;
-    W_0[6+(NY0) * 6] = 0.1;
+    W_0[4+(NY0) * 4] = 0.001;
+    W_0[5+(NY0) * 5] = 0.001;
+    W_0[6+(NY0) * 6] = 0.001;
     W_0[7+(NY0) * 7] = 0.05;
     W_0[8+(NY0) * 8] = 0.05;
     W_0[9+(NY0) * 9] = 0.05;
-    W_0[10+(NY0) * 10] = 0.05;
-    W_0[11+(NY0) * 11] = 0.05;
-    W_0[12+(NY0) * 12] = 0.05;
     W_0[13+(NY0) * 13] = 0.1;
     W_0[14+(NY0) * 14] = 0.1;
     W_0[15+(NY0) * 15] = 0.1;
@@ -454,15 +451,12 @@ void my_quad_acados_setup_nlp_in(my_quad_solver_capsule* capsule, const int N, d
     W[0+(NY) * 0] = 10;
     W[1+(NY) * 1] = 10;
     W[2+(NY) * 2] = 10;
-    W[4+(NY) * 4] = 0.1;
-    W[5+(NY) * 5] = 0.1;
-    W[6+(NY) * 6] = 0.1;
+    W[4+(NY) * 4] = 0.001;
+    W[5+(NY) * 5] = 0.001;
+    W[6+(NY) * 6] = 0.001;
     W[7+(NY) * 7] = 0.05;
     W[8+(NY) * 8] = 0.05;
     W[9+(NY) * 9] = 0.05;
-    W[10+(NY) * 10] = 0.05;
-    W[11+(NY) * 11] = 0.05;
-    W[12+(NY) * 12] = 0.05;
     W[13+(NY) * 13] = 0.1;
     W[14+(NY) * 14] = 0.1;
     W[15+(NY) * 15] = 0.1;

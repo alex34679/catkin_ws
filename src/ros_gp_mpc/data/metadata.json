@@ -1,0 +1,29 @@
+{
+    "gazebo_dataset": {
+        "train": {
+            "dataset_001": {
+                "gazebo": "default"
+            }
+        }
+    },
+    "simplified_sim_dataset": {
+        "train": {
+            "dataset_001": {
+                "noisy": true,
+                "drag": true,
+                "payload": false,
+                "motor_noise": true
+            }
+        }
+    },
+    "exp_dataset": {
+        "train": {
+            "dataset_001": {
+                "flying_room": "default"
+            },
+            "dataset_002": {
+                "flying_room": "optitrack_raw"
+            }
+        }
+    }
+}

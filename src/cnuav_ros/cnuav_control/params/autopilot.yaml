@@ -23,7 +23,7 @@ circle_center: [ 0.0, 0.0, 0.0 ]
 
 # > 0: clockwise
 # < 0: counter-clockwise
-circle_velocity: 1.5
+circle_velocity: 1.0
 
 circle_radius: 1.5
 

@@ -16,6 +16,12 @@ import json
 import time
 import rospy
 import threading
+import sys
+import os
+
+# Add the absolute path to the directory containing 'src' to sys.path
+sys.path.append('/home/lty/work_7.22/catkin_ws/src/ros_gp_mpc')
+
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -33,6 +39,135 @@ from src.utils.visualization import trajectory_tracking_results, mse_tracking_ex
 from src.experiments.point_tracking_and_record import make_record_dict, get_record_file_and_dir, check_out_data
 from src.model_fitting.rdrv_fitting import load_rdrv
 
+import numpy as np
+import tf.transformations as tf_trans
+from geometry_msgs.msg import PoseStamped
+
+import numpy as np
+from geometry_msgs.msg import PoseStamped
+
+class VelFilter:
+    def __init__(self):
+        self.binit_ = False
+        self.last_pose_ = None
+        self.last_v_ = np.zeros(3)
+        self.intervars_ = [{'interv1': 0, 'interv2': [0, 0, 0], 'interv3': 0, 'interv4': 0, 'interv5': [0, 0]} for _ in range(3)]
+
+    def calVel(self, pose: PoseStamped):
+        if not self.binit_:
+            self.last_pose_ = pose
+            self.binit_ = True
+            return np.zeros(3)
+
+        dt = (pose.header.stamp - self.last_pose_.header.stamp).to_sec()
+        if dt < 1e-3:
+            return self.last_v_
+
+        vx = (pose.pose.position.x - self.last_pose_.pose.position.x) / dt
+        vy = (pose.pose.position.y - self.last_pose_.pose.position.y) / dt
+        vz = (pose.pose.position.z - self.last_pose_.pose.position.z) / dt
+
+        # vx_filtered = self.updateAxis(0, vx)
+        # vy_filtered = self.updateAxis(1, vy)
+        # vz_filtered = self.updateAxis(2, vz)
+        vx_filtered = vx
+        vy_filtered = vy
+        vz_filtered = vz
+        self.shiftInterVars()
+
+        v = np.array([vx_filtered, vy_filtered, vz_filtered])
+
+        self.last_pose_ = pose
+        self.last_v_ = v
+
+        return v
+
+    def updateAxis(self, i, x):
+        self.intervars_[i]['interv1'] = 0.3333 * x + 1.4803e-16 * self.intervars_[i]['interv2'][1]
+        self.intervars_[i]['interv2'][2] = self.intervars_[i]['interv1'] - 0.3333 * self.intervars_[i]['interv2'][0]
+        self.intervars_[i]['interv3'] = self.intervars_[i]['interv2'][2] + 2 * self.intervars_[i]['interv2'][1]
+        self.intervars_[i]['interv4'] = self.intervars_[i]['interv3'] + self.intervars_[i]['interv2'][0]
+        self.intervars_[i]['interv5'][1] = 0.5 * self.intervars_[i]['interv4'] + 5.5511e-17 * self.intervars_[i]['interv5'][0]
+        y = self.intervars_[i]['interv5'][1] + self.intervars_[i]['interv5'][0]
+        return y
+
+    def shiftInterVars(self):
+        for i in range(3):
+            self.intervars_[i]['interv2'][1] = self.intervars_[i]['interv2'][0]
+            self.intervars_[i]['interv2'][0] = self.intervars_[i]['interv1']
+            self.intervars_[i]['interv5'][0] = self.intervars_[i]['interv5'][1]
+class VelocityCalculator:
+    def __init__(self):
+        self.vel_filter = VelFilter()
+        self.prev_q = None
+        self.prev_time = None
+
+    def calculate_velocity_and_angular_velocity_sim(self, msg):
+        p = np.array([msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z])
+        q = np.array([msg.pose.pose.orientation.w, msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z])
+
+        # Calculate linear velocity
+        pose_stamped = PoseStamped()
+        pose_stamped.pose.position.x, pose_stamped.pose.position.y, pose_stamped.pose.position.z = p
+        pose_stamped.header.stamp = msg.header.stamp
+        v = self.vel_filter.calVel(pose_stamped).tolist()
+
+        # Calculate angular velocity using quaternion difference
+        if self.prev_q is not None and self.prev_time is not None:
+            dt = (msg.header.stamp - self.prev_time).to_sec()
+            if dt > 0:
+                q1 = np.array(self.prev_q)
+                q2 = np.array(q)
+
+                # Calculate quaternion difference
+                q_diff = (q2 - q1) / dt
+
+                # Calculate angular velocity
+                q_conj = tf_trans.quaternion_conjugate(q1)
+                w = 2 * tf_trans.quaternion_multiply(q_diff, q_conj)[1:]
+                w = w.tolist()
+                
+        else:
+            w = [0, 0, 0]
+
+        self.prev_q = q
+        self.prev_time = msg.header.stamp
+
+        return v, w
+
+
+    def calculate_velocity_and_angular_velocity(self, msg):
+        p = np.array([msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])
+        q = np.array([msg.pose.orientation.w, msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z])
+
+        # Calculate linear velocity
+        pose_stamped = PoseStamped()
+        pose_stamped.pose.position.x, pose_stamped.pose.position.y, pose_stamped.pose.position.z = p
+        pose_stamped.header.stamp = msg.header.stamp
+        v = self.vel_filter.calVel(pose_stamped).tolist()
+
+        # Calculate angular velocity using quaternion difference
+        if self.prev_q is not None and self.prev_time is not None:
+            dt = (msg.header.stamp - self.prev_time).to_sec()
+            if dt > 0:
+                q1 = np.array(self.prev_q)
+                q2 = np.array(q)
+
+                # Calculate quaternion difference
+                q_diff = (q2 - q1) / dt
+
+                # Calculate angular velocity
+                q_conj = tf_trans.quaternion_conjugate(q1)
+                w = 2 * tf_trans.quaternion_multiply(q_diff, q_conj)[1:]
+                w = w.tolist()
+                
+        else:
+            w = [0, 0, 0]
+
+        self.prev_q = q
+        self.prev_time = msg.header.stamp
+
+        return v, w
 
 def odometry_parse(odom_msg):
     p = [odom_msg.pose.pose.position.x, odom_msg.pose.pose.position.y, odom_msg.pose.pose.position.z]
@@ -224,13 +359,15 @@ class GPMPCWrapper:
                 ekf_odom_topic = "/" + quad_name + "/state_estimate_ekf"
         else:
             # Assume real world setup
-            odom_topic = "/" + quad_name + "/state_estimate"
-            raw_topic = "/optitrack/" + quad_name
-            if use_ekf:
-                ekf_odom_topic = "/" + quad_name + "/state_estimate_ekf"
+            odom_topic = "/vrpn_client_node/" + quad_name + "/pose"
+            raw_topic = None
+            # raw_topic = "/optitrack/" + quad_name
+            # if use_ekf:
+            #     ekf_odom_topic = "/" + quad_name + "/state_estimate_ekf"
 
         land_topic = "/" + quad_name + "/autopilot/land"
-        control_topic = "/" + quad_name + "/autopilot/control_command_input"
+        control_topic = "/" + quad_name + "/control_command"
+        # control_topic = "/" + quad_name + "/autopilot/control_command_input"
         off_topic = "/" + quad_name + "/autopilot/off"
 
         reference_topic = "reference"
@@ -248,11 +385,15 @@ class GPMPCWrapper:
             # We get a second odometry estimate which is smoothed. Used to evaluate the GP's.
             self.odom_sub = rospy.Subscriber(
                 odom_topic, Odometry, self.odometry_callback, queue_size=1, tcp_nodelay=True)
-            self.ekf_odom_sub = rospy.Subscriber(
-                ekf_odom_topic, Odometry, self.ekf_odom_callback, queue_size=1, tcp_nodelay=True)
+            # self.ekf_odom_sub = rospy.Subscriber(
+            #     ekf_odom_topic, Odometry, self.ekf_odom_callback, queue_size=1, tcp_nodelay=True)
         else:
-            self.odom_sub = rospy.Subscriber(
-                odom_topic, Odometry, self.odometry_callback, queue_size=1, tcp_nodelay=True)
+            if self.environment == "flying_room":
+                self.odom_sub = rospy.Subscriber(
+                    odom_topic, PoseStamped, self.odometry_callback, queue_size=1, tcp_nodelay=True)
+            else:
+                self.odom_sub = rospy.Subscriber(
+                    odom_topic, Odometry, self.odometry_callback, queue_size=1, tcp_nodelay=True)
         if raw_topic is not None and record_raw_optitrack:
             self.raw_sub = rospy.Subscriber(raw_topic, PoseStamped, self.raw_odometry_callback)
 
@@ -400,6 +541,32 @@ class GPMPCWrapper:
 
         p, q, v, w = odometry_parse(msg)
         self.gp_odom = p + q + v + w
+        
+    def calculate_velocity_and_angular_velocity(self, msg):
+        p = [msg.pose.position.x, msg.pose.position.y, msg.pose.position.z]
+        q = [msg.pose.orientation.w, msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z]
+
+        # Calculate linear velocity
+        pose_stamped = PoseStamped()
+        pose_stamped.pose.position.x, pose_stamped.pose.position.y, pose_stamped.pose.position.z = p
+        pose_stamped.header.stamp = msg.header.stamp
+        v = self.vel_filter.calVel(pose_stamped)
+
+        # Calculate angular velocity
+        if self.prev_q is not None and self.prev_time is not None:
+            dt = (msg.header.stamp - self.prev_time).to_sec()
+            if dt > 0:
+                current_euler = tf_trans.euler_from_quaternion(q)
+                prev_euler = tf_trans.euler_from_quaternion(self.prev_q)
+                euler_dot = [(current_euler[i] - prev_euler[i]) / dt for i in range(3)]
+                w = np.array(euler_dot)
+        else:
+            w = np.zeros(3)
+
+        self.prev_q = q
+        self.prev_time = msg.header.stamp
+
+        return v, w
 
     def odometry_callback(self, msg):
         """
@@ -410,14 +577,34 @@ class GPMPCWrapper:
 
         if self.controller_off:
             return
+        
+        if self.environment == "flying_room":
+            p = [msg.pose.position.x, msg.pose.position.y, msg.pose.position.z]
+            q = [msg.pose.orientation.w, msg.pose.orientation.x, msg.pose.orientation.y,
+                msg.pose.orientation.z]
+            if not hasattr(self, 'velocity_calculator'):
+                self.velocity_calculator = VelocityCalculator()
 
-        p, q, v, w = odometry_parse(msg)
+            if self.environment == "flying_room":
+                v, w = self.velocity_calculator.calculate_velocity_and_angular_velocity(msg)
+            print("Linear Velocity: ", v)
+            print("Angular Velocity: ", w)
+            # v = [odom_msg.twist.twist.linear.x, odom_msg.twist.twist.linear.y, odom_msg.twist.twist.linear.z]
+            # w = [odom_msg.twist.twist.angular.x, odom_msg.twist.twist.angular.y, odom_msg.twist.twist.angular.z]
+        else:
+            p, q, v, w = odometry_parse(msg)
+            if not hasattr(self, 'velocity_calculator'):
+                self.velocity_calculator = VelocityCalculator()
+
+            v, w = self.velocity_calculator.calculate_velocity_and_angular_velocity_sim(msg)
+            print("Linear Velocity: ", v)
+            print("Angular Velocity: ", w)
 
         # Change velocity to world frame if in gazebo environment
-        if self.environment == "gazebo":
-            v_w = v_dot_q(np.array(v), np.array(q)).tolist()
-        else:
-            v_w = v
+        # if self.environment == "gazebo":
+        #     v_w = v_dot_q(np.array(v), np.array(q)).tolist()
+        # else:
+        v_w = v
 
         self.x = p + q + v_w + w
 
@@ -797,7 +984,7 @@ def main():
     plot = rospy.get_param('~plot', default=None) if rospy.get_param('~plot', default=None) is not None else plot
 
     env = rospy.get_param('~environment', default='gazebo')
-    default_quad = "hummingbird" if env == "gazebo" else "colibri"
+    default_quad = "hummingbird" if env == "gazebo" else "yzh"
     load_options["params"] = {env: "default"}
 
     if model_type == "rdrv":
@@ -813,7 +1000,7 @@ def main():
         assert quad_name == "hummingbird"
         ekf_sync = False
     else:
-        assert quad_name == "colibri"
+        assert quad_name == "yzh"
         ekf_sync = rospy.get_param('~use_ekf_synchronization', default=False)
 
     # Reset experiments switch

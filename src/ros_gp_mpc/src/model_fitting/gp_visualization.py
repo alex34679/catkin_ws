@@ -14,6 +14,13 @@ this program. If not, see <http://www.gnu.org/licenses/>.
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
+
+import sys
+import os
+
+# Add the absolute path to the directory containing 'src' to sys.path
+sys.path.append('/home/lty/work_7.22/catkin_ws/src/ros_gp_mpc')
+
 from src.model_fitting.gp_common import GPDataset, restore_gp_regressors, read_dataset
 from config.configuration_parameters import ModelFitConfig as Conf
 from src.utils.utils import load_pickled_models

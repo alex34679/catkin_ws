@@ -282,7 +282,7 @@ def minimum_snap_trajectory_generator(traj_derivatives, yaw_derivatives, t_ref, 
     return reference_traj, t_ref, reference_u
 
 
-def load_map_limits_from_file(map_limits):
+def load_map_limits_from_file(map_limits):    
     if map_limits is not None and map_limits != "None":
         config_path = DirectoryConfig.CONFIG_DIR
         params_file = os.path.join(config_path, map_limits + '.yaml')
@@ -431,8 +431,8 @@ def loop_trajectory(quad, discretization_dt, radius, z, lin_acc, clockwise, yawi
     angle_vec = np.cumsum(w_vec) * discretization_dt
 
     # Compute position, velocity, acceleration, jerk
-    pos_traj_x = radius * np.sin(angle_vec)[np.newaxis, np.newaxis, :]
-    pos_traj_y = radius * np.cos(angle_vec)[np.newaxis, np.newaxis, :]
+    pos_traj_x = radius * np.sin(angle_vec)[np.newaxis, np.newaxis, :] 
+    pos_traj_y = radius * np.cos(angle_vec)[np.newaxis, np.newaxis, :] 
     pos_traj_z = np.ones_like(pos_traj_x) * z
 
     vel_traj_x = (radius * w_vec * np.cos(angle_vec))[np.newaxis, np.newaxis, :]

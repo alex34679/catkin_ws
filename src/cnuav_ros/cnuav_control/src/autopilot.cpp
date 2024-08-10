@@ -940,7 +940,8 @@ quadrotor_msgs::TrajectoryPoint Autopilot::getCirclePoint(const ros::Duration &d
         // point.pose.orientation.y = 0.0;
         // point.pose.orientation.z = 0.0;
 
-    } else if (t < total_time_two_circles + slow_down_time_) {
+    } 
+    else if (t < total_time_two_circles + slow_down_time_) {
         float elapsed_time = t - total_time_two_circles;
         float current_velocity = circle_velocity_ - deceleration * elapsed_time;
         float angular_vel = current_velocity / circle_radius_;

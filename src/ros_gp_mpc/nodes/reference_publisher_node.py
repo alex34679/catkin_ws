@@ -12,6 +12,12 @@ You should have received a copy of the GNU General Public License along with
 this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
+import sys
+import os
+
+# Add the absolute path to the directory containing 'src' to sys.path
+sys.path.append('/home/lty/work_7.22/catkin_ws/src/ros_gp_mpc')
+
 from std_msgs.msg import Bool
 from ros_gp_mpc.msg import ReferenceTrajectory
 from src.quad_mpc.create_ros_gp_mpc import custom_quad_param_loader
@@ -47,11 +53,11 @@ class ReferenceGenerator:
 
         # Load parameters of loop trajectory
         loop_r = rospy.get_param('~loop_r', default=1.5)
-        loop_z = rospy.get_param('~loop_z', default=1)
-        loop_v_max = rospy.get_param('~loop_v_max', default=3)
+        loop_z = rospy.get_param('~loop_z', default=1.0)
+        loop_v_max = rospy.get_param('~loop_v_max', default=1.0)
         loop_a = rospy.get_param('~loop_lin_a', default=0.075)
         loop_cc = rospy.get_param('~loop_clockwise', default=True)
-        loop_yawing = rospy.get_param('~loop_yawing', default=True)
+        loop_yawing = rospy.get_param('~loop_yawing', default=False)
 
         # Load world limits if any
         map_limits = rospy.get_param('~world_limits', default=None)

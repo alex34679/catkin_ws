@@ -15,5 +15,5 @@ drone_mass: 0.078
 
 
 # 有待进一步测量
-thrust_k: 402.2
-thrust_b: 144.8
+thrust_k: 338.3
+thrust_b: 23.7

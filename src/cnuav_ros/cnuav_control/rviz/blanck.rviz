@@ -11,7 +11,8 @@ Panels:
         - /Marker2
         - /Marker2/Namespaces1
         - /Axes1
-        - /PoseArray1
+        - /Marker3
+        - /Marker3/Namespaces1
       Splitter Ratio: 0.5029411911964417
     Tree Height: 620
   - Class: rviz/Selection
@@ -30,8 +31,8 @@ Panels:
     Splitter Ratio: 0.5
   - Class: rviz/Time
     Name: Time
-    SyncMode: 0
-    SyncSource: PointCloud2
+    SyncMode: 3
+    SyncSource: ""
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -62,7 +63,7 @@ Visualization Manager:
       Marker Topic: /hummingbird/pose/marker
       Name: Marker
       Namespaces:
-        "": true
+        hummingbird: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -70,7 +71,7 @@ Visualization Manager:
       Marker Topic: /hummingbird/traj_marker
       Name: Marker
       Namespaces:
-        trajectory: true
+        {}
       Queue Size: 10
       Value: true
     - Alpha: 1
@@ -81,6 +82,14 @@ Visualization Manager:
       Radius: 0.029999999329447746
       Reference Frame: hummingbird/base_link
       Show Trail: false
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /robot
+      Name: Marker
+      Namespaces:
+        mesh: true
+      Queue Size: 100
       Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
@@ -154,8 +163,8 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz/Orbit
-      Distance: 7.320981025695801
+      Class: rviz/XYOrbit
+      Distance: 6.616693019866943
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -163,17 +172,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: -0.7812657952308655
-        Y: 0.5090118646621704
-        Z: 0.8653287887573242
+        X: 0.9679380059242249
+        Y: 0.9983588457107544
+        Z: 0
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.03979751840233803
+      Pitch: 0.9103992581367493
       Target Frame: <Fixed Frame>
-      Yaw: 1.3223481178283691
+      Yaw: 0.12539207935333252
     Saved: ~
 Window Geometry:
   Displays:

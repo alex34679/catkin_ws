@@ -74,7 +74,7 @@ int my_quad_acados_sim_create(my_quad_sim_solver_capsule * capsule)
     bool tmp_bool;
 
     
-    double Tsim = 0.1;
+    double Tsim = 0.05;
 
     
     // explicit ode

@@ -16,6 +16,13 @@ import numpy as np
 import casadi as cs
 import joblib
 
+import sys
+import os
+
+# Add the absolute path to the directory containing 'src' to sys.path
+sys.path.append('/home/lty/work_7.22/catkin_ws/src/ros_gp_mpc')
+
+
 from tqdm import tqdm
 from operator import itemgetter
 from numpy.linalg import inv, cholesky, lstsq

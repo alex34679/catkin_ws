@@ -47,39 +47,39 @@ buttons: [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]"
 
 
 sleep 6
-echo "Slowdown ..."
-rostopic pub -1 /joy sensor_msgs/Joy "header:
-  seq: 0 
-  stamp:
-    secs: 0
-    nsecs: 0
-  frame_id: \"/dev/input/js0\"
-axes: [0.0, 0.0, 0.0, 0.0, -0.0, 0.0, 0.0, 0.0]
-buttons: [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]" 
+# echo "Slowdown ..."
+# rostopic pub -1 /joy sensor_msgs/Joy "header:
+#   seq: 0 
+#   stamp:
+#     secs: 0
+#     nsecs: 0
+#   frame_id: \"/dev/input/js0\"
+# axes: [0.0, 0.0, 0.0, 0.0, -0.0, 0.0, 0.0, 0.0]
+# buttons: [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]" 
 
 
 
-sleep 1
+# sleep 1
 
-rostopic pub -1 /joy sensor_msgs/Joy "header:
-  seq: 0
-  stamp:
-    secs: 0
-    nsecs: 0
-  frame_id: "/dev/input/js0"
-axes: [0.0, 0.0, 0.0, 0.0, -0.0, 0.0, 0.0, 0.0]
-buttons: [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]"
+# rostopic pub -1 /joy sensor_msgs/Joy "header:
+#   seq: 0
+#   stamp:
+#     secs: 0
+#     nsecs: 0
+#   frame_id: "/dev/input/js0"
+# axes: [0.0, 0.0, 0.0, 0.0, -0.0, 0.0, 0.0, 0.0]
+# buttons: [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]"
 
 
 
-sleep 1
+# sleep 1
 
-rostopic pub -1 /joy sensor_msgs/Joy "header:
-  seq: 0
-  stamp:
-    secs: 0
-    nsecs: 0
-  frame_id: "/dev/input/js0"
-axes: [0.0, 0.0, 0.0, 0.0, -0.0, 0.0, 0.0, 0.0]
-buttons: [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]"
+# rostopic pub -1 /joy sensor_msgs/Joy "header:
+#   seq: 0
+#   stamp:
+#     secs: 0
+#     nsecs: 0
+#   frame_id: "/dev/input/js0"
+# axes: [0.0, 0.0, 0.0, 0.0, -0.0, 0.0, 0.0, 0.0]
+# buttons: [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]"
 

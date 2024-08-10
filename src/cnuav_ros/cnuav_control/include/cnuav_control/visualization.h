@@ -12,7 +12,7 @@
 class OdometryVisualizer {
 public:
     OdometryVisualizer();
-    OdometryVisualizer(const ros::NodeHandle& nh, const std::string& quad_name, const bool mode);
+    OdometryVisualizer(const ros::NodeHandle& nh,const ros::NodeHandle& pnh);
     void odometryCallback_sim(const nav_msgs::Odometry::ConstPtr& msg);
     void odometryCallback_exp(const geometry_msgs::PoseStamped::ConstPtr& msg);
 
@@ -28,14 +28,21 @@ public:
 
 private:
     ros::NodeHandle nh_;
+    ros::NodeHandle pnh_;
     bool mode_;
+    std::string mesh_resource;
+    std::string quad_name;
     ros::Subscriber odom_sub_;
     ros::Subscriber traj_sub_;
     ros::Subscriber goal_sub_;
     ros::Publisher marker_pub_;
     ros::Publisher traj_marker_pub_;
+    ros::Publisher meshPub;
     visualization_msgs::Marker marker_;
     visualization_msgs::Marker traj_marker_;
+    visualization_msgs::Marker meshROS;
+
+     double color_r, color_g, color_b, color_a;
 };
 
 #endif // VISUALIZATION_H

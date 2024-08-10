@@ -36,7 +36,7 @@ class Quadrotor3D:
         configuration = 'x'
 
         # Maximum thrust in Newtons of a thruster when rotating at maximum speed.
-        self.max_thrust = 20
+        self.max_thrust = 0.3
 
         # System state space
         self.pos = np.zeros((3,))

@@ -59,7 +59,7 @@
 
         <node pkg="cnuav_control" type="cnuav_cbf_clf_sim_node" name="cnuav_cbf_clf_sim_node" output="screen">
              <remap from="pose" to="ground_truth/odometry" />
-             <remap from="command" to="control_command" />
+             <remap from="command" to="control_command/temp" />
              <remap from="arm" to="bridge/arm" />
              <param name="mpc" value="true" />
              <rosparam file="$(find cnuav_control)/params/position_controller.yaml" />

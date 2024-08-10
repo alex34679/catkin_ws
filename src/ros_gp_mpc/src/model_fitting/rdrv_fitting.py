@@ -17,6 +17,13 @@ import joblib
 import argparse
 import subprocess
 import numpy as np
+
+import sys
+import os
+
+# Add the absolute path to the directory containing 'src' to sys.path
+sys.path.append('/home/lty/work_7.22/catkin_ws/src/ros_gp_mpc')
+
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from src.model_fitting.gp_common import GPDataset, read_dataset

@@ -36,7 +36,8 @@ def custom_quad_param_loader(quad_name):
                        float(attrib['body_inertia'][0]['izz'])])
     quad.length = float(attrib['arm_length'])
 
-    quad.max_thrust = float(attrib["max_rot_velocity"]) ** 2 * float(attrib["motor_constant"])
+    # quad.max_thrust = float(attrib["max_rot_velocity"]) ** 2 * float(attrib["motor_constant"])
+    quad.max_thrust = 0.3
     quad.c = float(attrib['moment_constant'])
 
     # x configuration
@@ -64,7 +65,7 @@ class ROSGPMPC:
         if point_reference:
             acados_config = {
                 "solver_type": "SQP",
-                "terminal_cost": True
+                "terminal_cost": False
             }
         else:
             acados_config = {
@@ -72,8 +73,8 @@ class ROSGPMPC:
                 "terminal_cost": False
             }
 
-        q_diagonal = np.array([0.5, 0.5, 0.5, 0.1, 0.1, 0.1, 0.05, 0.05, 0.05, 0.01, 0.01, 0.01])
-        r_diagonal = np.array([1.0, 1.0, 1.0, 1.0])
+        q_diagonal = np.array([0.5, 0.5, 0.5, 0.1, 0.1, 0.1, 0.05, 0.05, 0.05, 0.01, 0.01, 0.01]) * 10
+        r_diagonal = np.array([1.0, 1.0, 1.0, 1.0]) * 10
 
         q_mask = np.array([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]).T
 
