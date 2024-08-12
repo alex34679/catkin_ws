@@ -37,7 +37,7 @@ def custom_quad_param_loader(quad_name):
     quad.length = float(attrib['arm_length'])
 
     # quad.max_thrust = float(attrib["max_rot_velocity"]) ** 2 * float(attrib["motor_constant"])
-    quad.max_thrust = 0.3
+    quad.max_thrust = 0.4
     quad.c = float(attrib['moment_constant'])
 
     # x configuration

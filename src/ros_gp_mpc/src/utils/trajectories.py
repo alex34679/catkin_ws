@@ -58,7 +58,7 @@ def check_trajectory(trajectory, inputs, tvec, plot=False):
             return False
 
         # 2) check if attitude is consistent with acceleration
-        gravity = 9.81
+        gravity = 9.7947
         numeric_thrust = numeric_derivative[i, 7:10] + np.array([0.0, 0.0, gravity])
         numeric_thrust = numeric_thrust / np.linalg.norm(numeric_thrust)
         analytic_attitude = trajectory[i, 3:7]
@@ -151,7 +151,7 @@ def minimum_snap_trajectory_generator(traj_derivatives, yaw_derivatives, t_ref, 
     len_traj = traj_derivatives.shape[2]
 
     # Add gravity to accelerations
-    gravity = 9.81
+    gravity = 9.7947
     thrust = traj_derivatives[2, :, :].T + np.tile(np.array([[0, 0, 1]]), (len_traj, 1)) * gravity
     # Compute body axes
     z_b = thrust / np.sqrt(np.sum(thrust ** 2, 1))[:, np.newaxis]
@@ -396,8 +396,13 @@ def loop_trajectory(quad, discretization_dt, radius, z, lin_acc, clockwise, yawi
     ramp_t_vec = np.arange(0, ramp_up_t, discretization_dt)
     ramp_up_alpha = alpha_acc * np.sin(np.pi / (2 * ramp_up_t) * ramp_t_vec) ** 2
     # Acceleration phase
-    coasting_duration = (t_total - 4 * ramp_up_t) / 2
-    coasting_t_vec = ramp_up_t + np.arange(0, coasting_duration, discretization_dt)
+    coasting_duration = max(0, (t_total - 4 * ramp_up_t) / 2)
+    if coasting_duration > 0:
+        coasting_t_vec = ramp_up_t + np.arange(0, coasting_duration, discretization_dt)
+    else:
+        coasting_t_vec = np.array([ramp_up_t])
+        # 或者根据需求处理滑行阶段为零的情况
+
     coasting_alpha = np.ones_like(coasting_t_vec) * alpha_acc
     # Transition phase: decelerate
     transition_t_vec = np.arange(0, 2 * ramp_up_t, discretization_dt)

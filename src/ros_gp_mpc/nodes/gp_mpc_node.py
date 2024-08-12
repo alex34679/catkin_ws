@@ -21,7 +21,7 @@ import os
 
 # Add the absolute path to the directory containing 'src' to sys.path
 sys.path.append('/home/lty/work_7.22/catkin_ws/src/ros_gp_mpc')
-
+from geometry_msgs.msg import PoseStamped, Twist, Vector3, Pose, Quaternion
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -47,12 +47,18 @@ import numpy as np
 from geometry_msgs.msg import PoseStamped
 
 class VelFilter:
-    def __init__(self):
+    def __init__(self, alpha_v=0.1, alpha_w=0.8, alpha_q = 0.1):
         self.binit_ = False
         self.last_pose_ = None
         self.last_v_ = np.zeros(3)
-        self.intervars_ = [{'interv1': 0, 'interv2': [0, 0, 0], 'interv3': 0, 'interv4': 0, 'interv5': [0, 0]} for _ in range(3)]
-
+        self.last_w_ = np.zeros(3)
+        self.alpha_q = alpha_q  # 四元数滤波器的平滑因子
+        self.alpha_v = alpha_v  # Low-pass filter coefficient for velocity
+        self.alpha_w = alpha_w  # Low-pass filter coefficient for angular velocity
+        self.v_filtered_ = np.zeros(3)
+        self.w_filtered_ = np.zeros(3)
+        self.q_filtered_ = None  # 滤波后的四元数
+    
     def calVel(self, pose: PoseStamped):
         if not self.binit_:
             self.last_pose_ = pose
@@ -67,40 +73,66 @@ class VelFilter:
         vy = (pose.pose.position.y - self.last_pose_.pose.position.y) / dt
         vz = (pose.pose.position.z - self.last_pose_.pose.position.z) / dt
 
-        # vx_filtered = self.updateAxis(0, vx)
-        # vy_filtered = self.updateAxis(1, vy)
-        # vz_filtered = self.updateAxis(2, vz)
-        vx_filtered = vx
-        vy_filtered = vy
-        vz_filtered = vz
-        self.shiftInterVars()
-
-        v = np.array([vx_filtered, vy_filtered, vz_filtered])
+        # Apply low-pass filter to velocity
+        self.v_filtered_ = self.alpha_v * np.array([vx, vy, vz]) + (1 - self.alpha_v) * self.v_filtered_
 
         self.last_pose_ = pose
-        self.last_v_ = v
+        self.last_v_ = self.v_filtered_
 
-        return v
+        return self.v_filtered_
+    
+    def filterQuaternion(self, q):
+        if self.q_filtered_ is None:
+            self.q_filtered_ = np.array(q)
+        else:
+            self.q_filtered_ = self.alpha_q * np.array(q) + (1 - self.alpha_q) * self.q_filtered_
+        return self.q_filtered_
 
-    def updateAxis(self, i, x):
-        self.intervars_[i]['interv1'] = 0.3333 * x + 1.4803e-16 * self.intervars_[i]['interv2'][1]
-        self.intervars_[i]['interv2'][2] = self.intervars_[i]['interv1'] - 0.3333 * self.intervars_[i]['interv2'][0]
-        self.intervars_[i]['interv3'] = self.intervars_[i]['interv2'][2] + 2 * self.intervars_[i]['interv2'][1]
-        self.intervars_[i]['interv4'] = self.intervars_[i]['interv3'] + self.intervars_[i]['interv2'][0]
-        self.intervars_[i]['interv5'][1] = 0.5 * self.intervars_[i]['interv4'] + 5.5511e-17 * self.intervars_[i]['interv5'][0]
-        y = self.intervars_[i]['interv5'][1] + self.intervars_[i]['interv5'][0]
-        return y
 
-    def shiftInterVars(self):
-        for i in range(3):
-            self.intervars_[i]['interv2'][1] = self.intervars_[i]['interv2'][0]
-            self.intervars_[i]['interv2'][0] = self.intervars_[i]['interv1']
-            self.intervars_[i]['interv5'][0] = self.intervars_[i]['interv5'][1]
+    def calAngularVelocity(self, prev_q, q, dt):
+        if dt > 0:
+                        # 对四元数进行滤波
+            q_filtered_prev = prev_q
+            q_filtered = self.filterQuaternion(q)
+            
+            q1 = np.array(q_filtered_prev)
+            q2 = np.array(q_filtered)
+
+            # Calculate quaternion difference
+            q_diff = (q2 - q1) / dt
+
+            # Calculate angular velocity
+            q_conj = tf_trans.quaternion_conjugate(q1)
+            w = 2 * tf_trans.quaternion_multiply(q_diff, q_conj)[1:]
+            w[0] = -w[0]
+            temp = w[0]
+            w[0] = w[1]
+            w[1] = temp
+            
+            if np.any(np.abs(w) > 4.5):
+                # 如果有一个分量大于 4.5，使用上次的结果
+                w = self.w_filtered_
+            # Apply low-pass filter to angular velocity
+            self.w_filtered_ = self.alpha_w * w + (1 - self.alpha_w) * self.w_filtered_
+
+            return self.w_filtered_, q_filtered
+        return np.zeros(3), prev_q
+    
+    
 class VelocityCalculator:
     def __init__(self):
         self.vel_filter = VelFilter()
         self.prev_q = None
         self.prev_time = None
+        self.odom_pub = rospy.Publisher('odom', Odometry, queue_size=10)
+        self.ref_x = 0
+        self.ref_y = 0
+        self.ref_z = 0
+    
+    def set_ref(self, x,y,z):
+        self.ref_x = x
+        self.ref_y = y
+        self.ref_z = z
 
     def calculate_velocity_and_angular_velocity_sim(self, msg):
         p = np.array([msg.pose.pose.position.x, msg.pose.pose.position.y, msg.pose.pose.position.z])
@@ -115,26 +147,47 @@ class VelocityCalculator:
         # Calculate angular velocity using quaternion difference
         if self.prev_q is not None and self.prev_time is not None:
             dt = (msg.header.stamp - self.prev_time).to_sec()
-            if dt > 0:
-                q1 = np.array(self.prev_q)
-                q2 = np.array(q)
-
-                # Calculate quaternion difference
-                q_diff = (q2 - q1) / dt
-
-                # Calculate angular velocity
-                q_conj = tf_trans.quaternion_conjugate(q1)
-                w = 2 * tf_trans.quaternion_multiply(q_diff, q_conj)[1:]
-                w = w.tolist()
-                
+            w, qf = self.vel_filter.calAngularVelocity(self.prev_q, q, dt)
+            w = w.tolist()
+            self.prev_q = qf
         else:
             w = [0, 0, 0]
-
+            self.prev_q = q
+            
+        
         self.prev_q = q
         self.prev_time = msg.header.stamp
 
+        euler = tf_trans.euler_from_quaternion(q)
+        self.publish_odometry(v, w, euler)
+        
         return v, w
+    
+    def publish_odometry(self, linear_velocity, angular_velocity, euler_angles):
+    # Create Odometry message
+        odom_msg = Odometry()
 
+        # Fill header
+        odom_msg.header.stamp = rospy.Time.now()
+        odom_msg.header.frame_id = "base_link"  # Replace with your frame_id
+        odom_msg.child_frame_id = "base_link"    # Replace with your child_frame_id
+
+        # Fill Pose (with dummy values for now, euler_angles are not used in Pose directly)
+        odom_msg.pose.pose.position.x = self.ref_x
+        odom_msg.pose.pose.position.y = self.ref_y
+        odom_msg.pose.pose.position.z = self.ref_z
+        odom_msg.pose.pose.orientation = Quaternion(*self.prev_q)
+
+        # Fill Twist
+        odom_msg.twist.twist.linear = Vector3(*linear_velocity)
+        odom_msg.twist.twist.angular = Vector3(*angular_velocity)
+
+        # Fill covariance matrices with zeros (if not used)
+        odom_msg.pose.covariance = [0.0] * 36
+        odom_msg.twist.covariance = [0.0] * 36
+
+        # Publish the Odometry message
+        self.odom_pub.publish(odom_msg)
 
     def calculate_velocity_and_angular_velocity(self, msg):
         p = np.array([msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])
@@ -149,24 +202,18 @@ class VelocityCalculator:
         # Calculate angular velocity using quaternion difference
         if self.prev_q is not None and self.prev_time is not None:
             dt = (msg.header.stamp - self.prev_time).to_sec()
-            if dt > 0:
-                q1 = np.array(self.prev_q)
-                q2 = np.array(q)
-
-                # Calculate quaternion difference
-                q_diff = (q2 - q1) / dt
-
-                # Calculate angular velocity
-                q_conj = tf_trans.quaternion_conjugate(q1)
-                w = 2 * tf_trans.quaternion_multiply(q_diff, q_conj)[1:]
-                w = w.tolist()
-                
+            w, qf = self.vel_filter.calAngularVelocity(self.prev_q, q, dt)
+            w = w.tolist()
+            self.prev_q = qf
         else:
             w = [0, 0, 0]
-
-        self.prev_q = q
+            self.prev_q = q
+        
+        
         self.prev_time = msg.header.stamp
 
+        euler = tf_trans.euler_from_quaternion(q)
+        self.publish_odometry(v, w, euler)
         return v, w
 
 def odometry_parse(odom_msg):
@@ -587,8 +634,8 @@ class GPMPCWrapper:
 
             if self.environment == "flying_room":
                 v, w = self.velocity_calculator.calculate_velocity_and_angular_velocity(msg)
-            print("Linear Velocity: ", v)
-            print("Angular Velocity: ", w)
+            # print("Linear Velocity: ", v)
+            # print("Angular Velocity: ", w)
             # v = [odom_msg.twist.twist.linear.x, odom_msg.twist.twist.linear.y, odom_msg.twist.twist.linear.z]
             # w = [odom_msg.twist.twist.angular.x, odom_msg.twist.twist.angular.y, odom_msg.twist.twist.angular.z]
         else:
@@ -597,8 +644,7 @@ class GPMPCWrapper:
                 self.velocity_calculator = VelocityCalculator()
 
             v, w = self.velocity_calculator.calculate_velocity_and_angular_velocity_sim(msg)
-            print("Linear Velocity: ", v)
-            print("Angular Velocity: ", w)
+
 
         # Change velocity to world frame if in gazebo environment
         # if self.environment == "gazebo":
@@ -607,6 +653,12 @@ class GPMPCWrapper:
         v_w = v
 
         self.x = p + q + v_w + w
+        
+        if self.x_ref is not None:
+            self.velocity_calculator.set_ref(self.x_ref[0,0], self.x_ref[0,1], self.x_ref[0,2])
+        
+        if self.x_initial_reached and 0 <= self.current_idx < self.x_ref.shape[0]:
+            self.velocity_calculator.set_ref(self.x_ref[self.current_idx,0], self.x_ref[self.current_idx,1], self.x_ref[self.current_idx,2])
 
         try:
             # Update the state estimate of the quad

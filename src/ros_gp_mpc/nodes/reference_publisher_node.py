@@ -53,8 +53,8 @@ class ReferenceGenerator:
 
         # Load parameters of loop trajectory
         loop_r = rospy.get_param('~loop_r', default=1.5)
-        loop_z = rospy.get_param('~loop_z', default=1.0)
-        loop_v_max = rospy.get_param('~loop_v_max', default=1.0)
+        loop_z = rospy.get_param('~loop_z', default=0.5)
+        loop_v_max = rospy.get_param('~loop_v_max', default=0.5)
         loop_a = rospy.get_param('~loop_lin_a', default=0.075)
         loop_cc = rospy.get_param('~loop_clockwise', default=True)
         loop_yawing = rospy.get_param('~loop_yawing', default=False)

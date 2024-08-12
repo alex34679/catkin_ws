@@ -75,7 +75,7 @@ static const casadi_int casadi_s0[17] = {13, 1, 0, 13, 0, 1, 2, 3, 4, 5, 6, 7, 8
 static const casadi_int casadi_s1[8] = {4, 1, 0, 4, 0, 1, 2, 3};
 static const casadi_int casadi_s2[3] = {0, 0, 0};
 
-static const casadi_real casadi_c0[3] = {0., 0., 9.8100000000000005e+00};
+static const casadi_real casadi_c0[3] = {0., 0., 9.794700000000000005e+00};
 static const casadi_real casadi_c1[4] = {-1.6617009357883866e-01, -1.6617009357883866e-01, 1.6617009357883866e-01, 1.6617009357883866e-01};
 static const casadi_real casadi_c2[4] = {1.6617009357883866e-01, -1.6617009357883866e-01, -1.6617009357883866e-01, 1.6617009357883866e-01};
 static const casadi_real casadi_c3[4] = {-1.2999999999999999e-02, 1.2999999999999999e-02, -1.2999999999999999e-02, 1.2999999999999999e-02};
@@ -346,7 +346,7 @@ static int casadi_f0(const casadi_real** arg, casadi_real** res, casadi_int* iw,
   *rr++ = w14;
   /* #113: @13 = mac(@21,@17,@13) */
   for (i=0, rr=w13; i<1; ++i) for (j=0; j<3; ++j, ++rr) for (k=0, ss=w21+j, tt=w17+i*3; k<3; ++k) *rr += ss[k*3]**tt++;
-  /* #114: @17 = [0, 0, 9.81] */
+  /* #114: @17 = [0, 0, 9.7947] */
   casadi_copy(casadi_c0, 3, w17);
   /* #115: @13 = (@13-@17) */
   for (i=0, rr=w13, cs=w17; i<3; ++i) (*rr++) -= (*cs++);
