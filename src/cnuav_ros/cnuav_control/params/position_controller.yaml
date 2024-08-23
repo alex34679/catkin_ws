@@ -2,11 +2,11 @@ position_controller:
   use_rate_mode: true
   
   kpxy: 10.0
-  kdxy: 4.0
+  kdxy: 3.0
   
   kpz: 20.0
   kdz: 6.0
-  krp: 12.0
+  krp: 8.0
   kyaw: 4.0
   
   pxy_error_max: 0.6
@@ -17,7 +17,7 @@ position_controller:
 
   perform_aerodynamics_compensation: true
   
-  k_drag_x: 0.544
-  k_drag_y: 0.386
+  k_drag_x: 0.1
+  k_drag_y: 0.1
   k_drag_z: 0.0
-  k_thrust_horz: 0.009
+  k_thrust_horz: 0

@@ -17,17 +17,32 @@ find_package(catkin REQUIRED COMPONENTS
         eigen_catkin
         visualization_msgs
         tf
+        message_generation
         )
 
 find_package(
         yaml-cpp
 )
 
-catkin_package(
-)
 
-include_directories(
-        ${catkin_INCLUDE_DIRS}
+
+add_message_files(
+        FILES
+  TrajectoryTracking.msg
+  )
+  
+  generate_messages(
+  DEPENDENCIES
+  std_msgs
+  geometry_msgs
+  )
+  
+  catkin_package(
+  )
+
+  
+  include_directories(
+          ${catkin_INCLUDE_DIRS}
         ${YAML_CPP_INCLUDE_DIRS}
         include
         mpc_codegen/quadrotor_mpc_codegen
@@ -36,7 +51,9 @@ include_directories(
         externals/qpoases/INCLUDE
         )
 
-
+catkin_install_python(PROGRAMS script/plot_trajectory.py
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 ################# MPC lib #################
 
 add_library(cnuav_qpoases_lib

@@ -20,8 +20,11 @@ namespace cnuav {
 
         prefix_ = "[" + nh_.getNamespace() + "] ";
         mainloopTimer_ = nh_.createTimer(ros::Duration(1.0 / frequency_), &Autopilot::mainLoop, this);
+        pubTimer_ = nh_.createTimer(ros::Duration(1), &Autopilot::pubTraj, this);
 
         base_controller_params_.loadParameters(pnh);
+
+        traj_pub_ = nh_.advertise<cnuav_control::TrajectoryTracking>("trajectory_tracking", 10);
 
         pnh.getParam("mpc", if_mpc);
 
@@ -225,6 +228,8 @@ namespace cnuav {
 
         /// if task is going to finish, status will be switched to next stage
         if (status_ != Hover && taskFinished()) {
+            if(status_ == Trajectory)
+                traj_flag = true;
             ROS_INFO_STREAM_COND(verbose_, prefix_ + "Task Finish");
             if (status_ == Land) {
                 ROS_INFO_STREAM_COND(verbose_, prefix_ + "Disarm");
@@ -256,7 +261,18 @@ namespace cnuav {
 
         float dt = controller_->getDt();
         ros::Duration t = time_from_start + ros::Duration(dt);
-        auto ref_point = getTrajectoryPoint(t);
+        quadrotor_msgs::TrajectoryPoint ref_point;
+        if (status_ == Circle) {
+            ref_point = getCirclePoint(t);
+        } else if(status_ == Slowdown) {
+            ref_point = getSlowdownPoint(t);
+        }
+        else if(status_ == Trajectory){
+            ref_point = getTrajectoryPoint(t);
+        }
+        else{
+            ref_point = getTrajectoryPoint(t);
+        }
 
         quadrotor_common::TrajectoryPoint reference_trajectory_;
         reference_trajectory_.position.x() = ref_point.pose.position.x;
@@ -285,6 +301,65 @@ namespace cnuav {
         state_estimate.velocity.x() = current_state_[7];
         state_estimate.velocity.y() = current_state_[8];
         state_estimate.velocity.z() = current_state_[9];
+
+
+        // 构造实际状态
+        geometry_msgs::Vector3 actual_position;
+        actual_position.x = state_estimate.position.x();
+        actual_position.y = state_estimate.position.y();
+        actual_position.z = state_estimate.position.z();
+
+        geometry_msgs::Vector3 actual_velocity;
+        actual_velocity.x = state_estimate.velocity.x();
+        actual_velocity.y = state_estimate.velocity.y();
+        actual_velocity.z = state_estimate.velocity.z();
+
+        geometry_msgs::Vector3 actual_acceleration;
+        actual_acceleration.x = 0.0;
+        actual_acceleration.y = 0.0;
+        actual_acceleration.z = 0.0; // 假设实际加速度未提供，设为 0
+
+        // 构造参考状态
+        geometry_msgs::Vector3 ref_position;
+        ref_position.x = ref_point.pose.position.x;
+        ref_position.y = ref_point.pose.position.y;
+        ref_position.z = ref_point.pose.position.z;
+
+        geometry_msgs::Vector3 ref_velocity;
+        ref_velocity.x = ref_point.velocity.linear.x;
+        ref_velocity.y = ref_point.velocity.linear.y;
+        ref_velocity.z = ref_point.velocity.linear.z;
+
+        geometry_msgs::Vector3 ref_acceleration;
+        ref_acceleration.x = ref_point.acceleration.linear.x;
+        ref_acceleration.y = ref_point.acceleration.linear.y;
+        ref_acceleration.z = ref_point.acceleration.linear.z;
+
+        // 构造实际和参考的四元数姿态
+        geometry_msgs::Quaternion actual_orientation;
+        actual_orientation.w = state_estimate.orientation.w();
+        actual_orientation.x = state_estimate.orientation.x();
+        actual_orientation.y = state_estimate.orientation.y();
+        actual_orientation.z = state_estimate.orientation.z();
+
+        geometry_msgs::Quaternion ref_orientation;
+        ref_orientation.w = ref_point.pose.orientation.w;
+        ref_orientation.x = ref_point.pose.orientation.x;
+        ref_orientation.y = ref_point.pose.orientation.y;
+        ref_orientation.z = ref_point.pose.orientation.z;
+
+        // 调用 saveTraj 函数并传递参数
+        saveTraj(
+            actual_position,
+            actual_velocity,
+            actual_acceleration,
+            ref_position,
+            ref_velocity,
+            ref_acceleration,
+            actual_orientation,
+            ref_orientation
+        );
+
 
 
         cmd = pos_controller.run(state_estimate, reference_trajectory_,
@@ -1205,7 +1280,44 @@ quadrotor_msgs::TrajectoryPoint Autopilot::getCirclePoint(const ros::Duration &d
     }
 
 
+    void Autopilot::pubTraj(const ros::TimerEvent &event) {
+        if(traj_flag)
+            traj_pub_.publish(traj_msg_);
+    }
 
+    void Autopilot::saveTraj(const geometry_msgs::Vector3& np, 
+                             const geometry_msgs::Vector3& nv, 
+                             const geometry_msgs::Vector3& na, 
+                             const geometry_msgs::Vector3& rp, 
+                             const geometry_msgs::Vector3& rv, 
+                             const geometry_msgs::Vector3& ra,    
+                             const geometry_msgs::Quaternion& nw,
+                             const geometry_msgs::Quaternion& rw) 
+    {
+
+        if(status_ != Trajectory)
+            return;
+
+        // 添加实际的轨迹数据
+        traj_msg_.actual_position.push_back(np);
+        traj_msg_.actual_velocity.push_back(nv);
+        traj_msg_.actual_acceleration.push_back(na);
+        traj_msg_.actual_orientation.push_back(nw);
+
+        // 添加参考的轨迹数据
+        traj_msg_.reference_position.push_back(rp);
+        traj_msg_.reference_velocity.push_back(rv);
+        traj_msg_.reference_acceleration.push_back(ra);
+        traj_msg_.reference_orientation.push_back(rw);
+
+        // 获取当前时间
+        ros::Time current_time = ros::Time::now();
+
+        // 将 ros::Time 转换为 std_msgs::Float64 并添加到消息中
+        std_msgs::Float64 time_msg;
+        time_msg.data = current_time.toSec();  // 转换为秒
+        traj_msg_.actual_time.push_back(time_msg);  // 添加到消息中
+    }
 
 
 

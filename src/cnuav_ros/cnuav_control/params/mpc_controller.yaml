@@ -1,6 +1,6 @@
 # cmpc_controller parameters
 
-max_thrust: 12.0
+max_thrust: 15.0
 
 min_thrust: 2.0
 

@@ -10,7 +10,8 @@ find_package(catkin REQUIRED COMPONENTS
         rospy
         std_msgs
         quadrotor_common
-        trajectory_generation_helper
+        trajectory_generation_helper        
+        quadrotor_msgs
         )
 
 catkin_package()
@@ -50,3 +51,9 @@ target_link_libraries(one_obstacle_node
         ${catkin_LIBRARIES}
         )
 
+add_executable(circle_trajectory_node
+        src/node/circle_node.cpp)
+
+target_link_libraries(circle_trajectory_node
+        ${catkin_LIBRARIES}
+        )

@@ -12,6 +12,12 @@
 #include "cnuav_control/position_controller.h"
 #include "cnuav_control/position_controller_params.h"
 
+#include "cnuav_control/TrajectoryTracking.h"
+
+#include "geometry_msgs/Vector3.h"
+#include "geometry_msgs/Quaternion.h"
+#include <std_msgs/Float64.h>  // 添加此头文件
+
 namespace cnuav {
 
 
@@ -30,6 +36,8 @@ namespace cnuav {
         void setController(Controller *controller);
 
         void mainLoop(const ros::TimerEvent &event);
+
+        void pubTraj(const ros::TimerEvent &event);
 
         
 
@@ -110,6 +118,16 @@ namespace cnuav {
         Eigen::Vector2f calculateCrossgatePoint(const Eigen::Matrix<float, STATE_DIM, 1> current_state, const std::vector<GateState>& gate_states);
         float distance(float x1, float y1, float x2, float y2);
 
+
+        void saveTraj(const geometry_msgs::Vector3& np, 
+                        const geometry_msgs::Vector3& nv, 
+                        const geometry_msgs::Vector3& na, 
+                        const geometry_msgs::Vector3& rp, 
+                        const geometry_msgs::Vector3& rv, 
+                        const geometry_msgs::Vector3& ra,    
+                        const geometry_msgs::Quaternion& nw,
+                        const geometry_msgs::Quaternion& rw);
+
         ROSWrapper *wrapper_;
 
         Controller *controller_;
@@ -183,6 +201,8 @@ namespace cnuav {
 
         bool if_mpc;
 
+        bool traj_flag = false;
+
         quadrotor_common::ControlCommand cmd;
 
         ros::NodeHandle nh_;
@@ -191,10 +211,15 @@ namespace cnuav {
         std::string prefix_;
 
         ros::Timer mainloopTimer_;
+        ros::Timer pubTimer_;
 
         position_controller::PositionController pos_controller;
 
         position_controller::PositionControllerParams base_controller_params_;
+
+        cnuav_control::TrajectoryTracking traj_msg_;
+
+        ros::Publisher traj_pub_;
     };
 
 }// namespace cnuav

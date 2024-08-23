@@ -25,6 +25,7 @@ def custom_quad_param_loader(quad_name):
 
     this_path = os.path.dirname(os.path.realpath(__file__))
     params_file = os.path.join(this_path, '..', '..', 'config', quad_name + '.xacro')
+    rospy.loginfo(params_file)
 
     # Get parameters for drone
     attrib = parse_xacro_file(params_file)
@@ -36,8 +37,8 @@ def custom_quad_param_loader(quad_name):
                        float(attrib['body_inertia'][0]['izz'])])
     quad.length = float(attrib['arm_length'])
 
-    # quad.max_thrust = float(attrib["max_rot_velocity"]) ** 2 * float(attrib["motor_constant"])
-    quad.max_thrust = 0.4
+    quad.max_thrust = float(attrib["max_rot_velocity"]) ** 2 * float(attrib["motor_constant"])
+    # quad.max_thrust = 0.4
     quad.c = float(attrib['moment_constant'])
 
     # x configuration

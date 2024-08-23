@@ -153,14 +153,12 @@ class VelocityCalculator:
         else:
             w = [0, 0, 0]
             self.prev_q = q
-            
         
-        self.prev_q = q
+        
         self.prev_time = msg.header.stamp
 
         euler = tf_trans.euler_from_quaternion(q)
         self.publish_odometry(v, w, euler)
-        
         return v, w
     
     def publish_odometry(self, linear_velocity, angular_velocity, euler_angles):
@@ -640,10 +638,10 @@ class GPMPCWrapper:
             # w = [odom_msg.twist.twist.angular.x, odom_msg.twist.twist.angular.y, odom_msg.twist.twist.angular.z]
         else:
             p, q, v, w = odometry_parse(msg)
-            if not hasattr(self, 'velocity_calculator'):
-                self.velocity_calculator = VelocityCalculator()
+            # if not hasattr(self, 'velocity_calculator'):
+            #     self.velocity_calculator = VelocityCalculator()
 
-            v, w = self.velocity_calculator.calculate_velocity_and_angular_velocity_sim(msg)
+            # v, w = self.velocity_calculator.calculate_velocity_and_angular_velocity_sim(msg)
 
 
         # Change velocity to world frame if in gazebo environment
@@ -653,12 +651,12 @@ class GPMPCWrapper:
         v_w = v
 
         self.x = p + q + v_w + w
-        
-        if self.x_ref is not None:
-            self.velocity_calculator.set_ref(self.x_ref[0,0], self.x_ref[0,1], self.x_ref[0,2])
-        
-        if self.x_initial_reached and 0 <= self.current_idx < self.x_ref.shape[0]:
-            self.velocity_calculator.set_ref(self.x_ref[self.current_idx,0], self.x_ref[self.current_idx,1], self.x_ref[self.current_idx,2])
+        if self.environment == "flying_room":
+            if self.x_ref is not None:
+                self.velocity_calculator.set_ref(self.x_ref[0,0], self.x_ref[0,1], self.x_ref[0,2])
+            
+            if self.x_initial_reached and 0 <= self.current_idx < self.x_ref.shape[0]:
+                self.velocity_calculator.set_ref(self.x_ref[self.current_idx,0], self.x_ref[self.current_idx,1], self.x_ref[self.current_idx,2])
 
         try:
             # Update the state estimate of the quad

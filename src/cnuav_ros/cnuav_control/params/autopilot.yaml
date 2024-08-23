@@ -13,7 +13,7 @@ k_integral_compensation: 0.005
 
 frequency: 120.0
 
-takeoff_height: 0.5
+takeoff_height: 0.8
 
 takeoff_velocity: 0.1
 
@@ -23,11 +23,11 @@ circle_center: [ 0.0, 0.0, 0.0 ]
 
 # > 0: clockwise
 # < 0: counter-clockwise
-circle_velocity: 1.0
+circle_velocity: 5.0
 
-circle_radius: 1.5
+circle_radius: 1.8
 
-circle_height: 0.5
+circle_height: 0.8
 
 circle_warmup_time: 5.0
 

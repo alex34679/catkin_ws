@@ -92,6 +92,7 @@
 #include <Eigen/Dense>
 #include <vector>
 #include <nav_msgs/Odometry.h>
+#include <geometry_msgs/PoseArray.h>
 
 
 // 全局变量来存储初始位置和路标点
@@ -123,6 +124,17 @@ void goalCallback(const geometry_msgs::PoseStamped::ConstPtr &msg) {
     ROS_INFO("Goal received.");
 }
 
+void goalArrayCallback(const geometry_msgs::PoseArray::ConstPtr &msg) {
+    for (const auto &pose : msg->poses) {
+        geometry_msgs::PoseStamped pose_stamped;
+        pose_stamped.header = msg->header; // 使用PoseArray的header
+        pose_stamped.pose = pose;
+        waypoints.push_back(pose_stamped);
+    }
+    waypoints_received = true;
+    ROS_INFO("Waypoints received. Total: %lu", waypoints.size());
+}
+
 void odometryCallback_sim(const nav_msgs::Odometry::ConstPtr& msg){
     initial_pose.pose.position.x = msg->pose.pose.position.x;
     initial_pose.pose.position.y = msg->pose.pose.position.y;
@@ -151,6 +163,8 @@ int main(int argc, char **argv) {
 
     ros::Subscriber initial_pose_sub = nh_.subscribe("/initialpose", 1, initialPoseCallback);
     ros::Subscriber goal_sub = nh_.subscribe("/move_base_simple/goal", 1, goalCallback);
+    ros::Subscriber goal_array_sub = nh_.subscribe("/move_base_simple/goal_array", 1, goalArrayCallback);
+
 
     // ros::Subscriber odom_sub_ = nh.subscribe("/vrpn_client_node/multi3/pose", 10, odometryCallback);
     ros::Subscriber odom_sub;
@@ -202,15 +216,18 @@ int main(int argc, char **argv) {
 void GenerateCollisionFreeTrajectory(quadrotor_common::Trajectory &trajectory) {
     double kExecLoopRate_ = 120.0;
 
-    const double max_vel = 2.5;
-    const double max_thrust = 15.0;
-    const double max_roll_pitch_rate = 4.5;
+    const double max_vel = 3.5;
+    const double max_thrust = 12.0;
+    const double max_roll_pitch_rate = .5;
 
     std::vector<Eigen::Vector3d> way_points;
     // way_points.push_back(Eigen::Vector3d(initial_pose.pose.position.x, initial_pose.pose.position.y, initial_pose.pose.position.z));
 
     for (const auto &wp : waypoints) {
-        way_points.push_back(Eigen::Vector3d(wp.pose.position.x, wp.pose.position.y, wp.pose.position.z+0.5));
+        if(wp.pose.position.z == 0)
+            way_points.push_back(Eigen::Vector3d(wp.pose.position.x, wp.pose.position.y, wp.pose.position.z+0.5));
+        else
+            way_points.push_back(Eigen::Vector3d(wp.pose.position.x, wp.pose.position.y, wp.pose.position.z));
     }
 
     // Eigen::VectorXd initial_ring_segment_times = Eigen::VectorXd::Ones(int(way_points.size()));
