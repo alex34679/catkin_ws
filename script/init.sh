@@ -4,7 +4,7 @@
 BASE_PATH=$(realpath ../)
 
 # 绝对路径需要替换的路径
-OLD_ABS_PATH="/home/lty/temp/catkin_ws"
+OLD_ABS_PATH="/home/lty/ustc/catkin_ws"
 
 # 打印即将替换的信息
 echo "This script will replace all occurrences of '$OLD_ABS_PATH' with '$BASE_PATH' in files under '../src'."
