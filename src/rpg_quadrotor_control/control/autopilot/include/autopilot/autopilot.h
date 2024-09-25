@@ -21,6 +21,7 @@
 #include <ros/ros.h>
 #include <state_predictor/state_predictor.h>
 #include <std_msgs/Empty.h>
+#include "cnuav_control/TrajectoryTracking.h"
 
 #include "autopilot/autopilot_states.h"
 
@@ -93,6 +94,21 @@ class AutoPilot {
       const quadrotor_common::TrajectoryPoint& reference_state,
       const quadrotor_common::QuadStateEstimate& state_estimate);
 
+
+  void publishAutopilotPlot(
+      const quadrotor_common::QuadStateEstimate & state_estimate,
+      const quadrotor_common::TrajectoryPoint       ref_point);
+
+  void saveTraj(
+      const geometry_msgs::Vector3& np, 
+      const geometry_msgs::Vector3& nv, 
+      const geometry_msgs::Vector3& na, 
+      const geometry_msgs::Vector3& rp, 
+      const geometry_msgs::Vector3& rv, 
+      const geometry_msgs::Vector3& ra,    
+      const geometry_msgs::Quaternion& nw,
+      const geometry_msgs::Quaternion& rw) ;
+
   bool loadParameters();
 
   ros::NodeHandle nh_;
@@ -117,6 +133,7 @@ class AutoPilot {
 
   ros::Publisher control_command_pub_;
   ros::Publisher autopilot_feedback_pub_;
+  
 
   ros::Subscriber state_estimate_sub_;
   ros::Subscriber low_level_feedback_sub_;
@@ -137,6 +154,7 @@ class AutoPilot {
 
   quadrotor_common::TrajectoryPoint reference_state_;
   quadrotor_common::Trajectory reference_trajectory_;
+  cnuav_control::TrajectoryTracking traj_msg_;
 
   // Values received from callbacks
   quadrotor_common::QuadStateEstimate received_state_est_;

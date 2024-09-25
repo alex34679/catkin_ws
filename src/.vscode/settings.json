@@ -1,30 +1,25 @@
 {
     "python.autoComplete.extraPaths": [
-        "/home/lty/work_7.22/catkin_ws/devel/lib/python3/dist-packages",
-        "/home/lty/catkin_ws/devel/lib/python3/dist-packages",
+        "/home/lty/temp/catkin_ws/devel/lib/python3/dist-packages",
         "/opt/ros/noetic/lib/python3/dist-packages"
     ],
     "python.analysis.extraPaths": [
-        "/home/lty/work_7.22/catkin_ws/devel/lib/python3/dist-packages",
-        "/home/lty/catkin_ws/devel/lib/python3/dist-packages",
+        "/home/lty/temp/catkin_ws/devel/lib/python3/dist-packages",
         "/opt/ros/noetic/lib/python3/dist-packages"
     ],
     "files.associations": {
-        "*.ipp": "cpp",
-        "*.tcc": "cpp",
         "unordered_map": "cpp",
         "unordered_set": "cpp",
+        "core": "cpp",
         "array": "cpp",
+        "hash_map": "cpp",
+        "hash_set": "cpp",
         "deque": "cpp",
         "list": "cpp",
+        "string": "cpp",
         "vector": "cpp",
         "string_view": "cpp",
-        "chrono": "cpp",
-        "future": "cpp",
-        "string": "cpp",
-        "regex": "cpp",
-        "iterator": "cpp",
-        "sstream": "cpp",
-        "core": "cpp"
+        "initializer_list": "cpp",
+        "regex": "cpp"
     }
 }

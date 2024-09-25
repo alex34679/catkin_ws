@@ -44,10 +44,8 @@ namespace ego_planner
     // odom_sub_ = nh.subscribe("/hummingbird/odometry_sensor1/odometry", 1, &EGOReplanFSM::odometryCallback, this);
 
     if (if_sim) {
-        ROS_INFO("now mod is sim !!!");
         odom_sub_ = nh_.subscribe("pose", 10, &EGOReplanFSM::odometryCallback_sim, this);
     } else {
-        ROS_INFO("now mod is exp !!!");
         odom_sub_ = nh_.subscribe("pose", 10, &EGOReplanFSM::odometryCallback_exp, this);
     }
 

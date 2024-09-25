@@ -38,7 +38,7 @@ void initialPoseCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPt
 }
 
 Eigen::Quaterniond calculateQuaternion(const Eigen::Vector3d& cur_path, double fai) {  
-    const double g = 9.8;    
+    const double g = 9.81;    
     Eigen::Vector3d t = cur_path.head<3>(); // 使用Eigen的head方法获取前三个元素  
     t[2] += g; // 更新z分量  
 

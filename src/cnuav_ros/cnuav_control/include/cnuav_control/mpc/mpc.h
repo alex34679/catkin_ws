@@ -16,7 +16,7 @@ namespace cnuav {
     // WARNING !
     // These params are fixed when MPC codes are generated.
     // If you want to change any of them, re-generate codes as well.
-    const float dT = 0.1;
+    const float dT = 0.05;
     const size_t N = ACADO_N;
     const size_t kState = ACADO_NX;
     const size_t kInput = ACADO_NU;
@@ -63,6 +63,8 @@ namespace cnuav {
 
         void postControlProcess() override;
 
+        std::vector<Eigen::Vector3f> getStatePositions() const override;
+
     private:
         void init();
 
@@ -104,6 +106,8 @@ namespace cnuav {
         Eigen::Map<Eigen::Matrix<float, kInput, N, Eigen::ColMajor>> lb_{acadoVariables.lbValues};
 
         Eigen::Map<Eigen::Matrix<float, kInput, N, Eigen::ColMajor>> ub_{acadoVariables.ubValues};
+
+
     };
 }// namespace cnuav
 

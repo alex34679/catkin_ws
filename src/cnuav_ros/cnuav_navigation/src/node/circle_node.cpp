@@ -67,7 +67,7 @@ private:
     float slow_down_velocity_;
     float slow_down_time_;
     float lin_acc_ = 0.2;
-    double warm_up_speed_ = 0.2;
+    double warm_up_speed_ = 0.5;
 
 
 
@@ -94,11 +94,14 @@ private:
     void generateAndPublishTrajectory() {
         ROS_INFO("Generating trajectory...");
         // 生成轨迹并发布
-
+        Eigen::Vector3d target_pos(circle_radius_,0,circle_height_);
+        Eigen::Vector3d start_pos(initial_pose_.pose.position.x, initial_pose_.pose.position.y , initial_pose_.pose.position.z);
         float total_circle_time = 2 * M_PI * circle_radius_ / circle_velocity_ + slow_down_time_;
         float slow_circle_time = 0 * M_PI * circle_radius_ / slow_down_velocity_;
         float dt = 0.01;
-        for(float nt = 0; nt < 7*total_circle_time + slow_circle_time; nt+=dt){
+        float circle_warmup_time_ = (target_pos - start_pos).norm() / warm_up_speed_;
+        float speed_up_time_ = (circle_velocity_ - warm_up_speed_)  / lin_acc_;
+        for(float nt = 0; nt < circle_warmup_time_ + speed_up_time_ * 1.5; nt+=dt){
             auto point = getCirclePoint(nt);
             trajectory_.points.push_back(point);
         }
@@ -174,7 +177,7 @@ private:
 
 
     Eigen::Quaterniond calculateQuaternion(const Eigen::Vector3d& cur_path, double fai) {  
-        const double g = 9.8;    
+        const double g = 9.81;    
         Eigen::Vector3d t = cur_path.head<3>(); // 使用Eigen的head方法获取前三个元素  
         t[2] += g; // 更新z分量  
 
@@ -233,49 +236,46 @@ private:
             point.orientation = res;
 
         } else if (t < circle_warmup_time_ + speed_up_time_) {
-
             Eigen::Vector3d last_position = last_point.position;
             Eigen::Vector3d last_velocity = last_point.velocity;
 
-            // 计算当前线速度
             double delta_time = t - last_point.time_from_start.toSec();
+
+            // 使用初速度和加速度计算当前线速度
             double current_speed = last_velocity.norm() + lin_acc_ * delta_time;
 
-
-        // 根据当前线速度计算角速度
+            // 使用平均速度计算角速度
             double angular_velocity = current_speed / circle_radius_;
 
-            // 计算新的角度（相对于上一个点）
+            // 使用非线性速度变化计算新的角度
             double rad = atan2(last_position.y(), last_position.x()) + angular_velocity * delta_time;
 
-            // 计算新位置
+            // 更新位置
             point.position = Eigen::Vector3d(
                 circle_radius_ * cos(rad),
                 circle_radius_ * sin(rad),
                 circle_height_
             );
 
-            // 计算新速度
+            // 更新速度
             point.velocity = Eigen::Vector3d(
                 -circle_radius_ * sin(rad) * angular_velocity,
                 circle_radius_ * cos(rad) * angular_velocity,
                 0.0
             );
 
-            // 计算新加速度
+            // 更新加速度（考虑线速度的变化）
             point.acceleration = Eigen::Vector3d(
                 -circle_radius_ * (angular_velocity * angular_velocity * cos(rad)),
                 -circle_radius_ * (angular_velocity * angular_velocity * sin(rad)),
                 0.0
             );
 
-            // Eigen::Vector3d now_a(point.acceleration.linear.x, point.acceleration.linear.y, point.acceleration.linear.z);
-
+            // 更新姿态
             Eigen::Quaterniond res = calculateQuaternion(point.acceleration, 0);
-
             point.orientation = res;
+        }
 
-        } 
         else {
             // 恒定线速度，计算角速度
             double angular_velocity = circle_velocity_ / circle_radius_;

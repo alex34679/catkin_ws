@@ -18,6 +18,7 @@
   <depend>position_controller</depend>
   <depend>quadrotor_common</depend>
   <depend>quadrotor_msgs</depend>
+  <depend>cnuav_control</depend>
   <depend>roscpp</depend>
   <depend>state_predictor</depend>
   <depend>std_msgs</depend>

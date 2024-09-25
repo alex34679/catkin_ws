@@ -21,11 +21,12 @@
 #include <mav_msgs/default_topics.h>
 #include <mavros_msgs/HilControls.h>
 #include <mavros_msgs/mavlink_convert.h>
+#include <mavlink/v2.0/common/mavlink.h>
 
-#ifndef MAVLINK_H
   typedef mavlink::mavlink_message_t mavlink_message_t;
-  #include <mavlink/v2.0/common/mavlink.h>
-#endif 
+// #ifndef MAVLINK_H
+//   #include <mavlink/v2.0/common/mavlink.h>
+// #endif 
 
 #include <rotors_hil_interface/hil_listeners.h>
 

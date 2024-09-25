@@ -24,7 +24,10 @@ namespace cnuav {
 
         base_controller_params_.loadParameters(pnh);
 
+
         traj_pub_ = nh_.advertise<cnuav_control::TrajectoryTracking>("trajectory_tracking", 10);
+        marker_pub = nh_.advertise<visualization_msgs::Marker>("visualization_marker", 10);
+
 
         pnh.getParam("mpc", if_mpc);
 
@@ -260,6 +263,7 @@ namespace cnuav {
         calRefStates(time_from_start, ref_states);
 
         float dt = controller_->getDt();
+
         ros::Duration t = time_from_start + ros::Duration(dt);
         quadrotor_msgs::TrajectoryPoint ref_point;
         if (status_ == Circle) {
@@ -416,6 +420,10 @@ namespace cnuav {
             }
             if (valid) {
                 inputs_ = inputs;
+                    std::vector<Eigen::Vector3f> positions = controller_->getStatePositions();
+
+                    // 可视化状态位置并发布到 RViz
+                    visualizePositions(positions, ref_states);
             } else {
                 ROS_WARN("Control command invalid!");
                 controller_->reset();
@@ -884,6 +892,20 @@ namespace cnuav {
         p_inter.pose.orientation.y = (1 - ratio) * p0.pose.orientation.y + ratio * p1.pose.orientation.y;
         p_inter.pose.orientation.z = (1 - ratio) * p0.pose.orientation.z + ratio * p1.pose.orientation.z;
 
+        // 将 geometry_msgs::Quaternion 转换为 Eigen::Quaterniond
+        // Eigen::Quaterniond q0(p0.pose.orientation.w, p0.pose.orientation.x, p0.pose.orientation.y, p0.pose.orientation.z);
+        // Eigen::Quaterniond q1(p1.pose.orientation.w, p1.pose.orientation.x, p1.pose.orientation.y, p1.pose.orientation.z);
+
+        // // 执行球面线性插值（Slerp）
+        // Eigen::Quaterniond q_interpolated = q0.slerp(ratio, q1);
+
+        // // 将结果转换回 geometry_msgs::Quaternion
+        // geometry_msgs::Quaternion q_result;
+        // p_inter.pose.orientation.w = q_interpolated.w();
+        // p_inter.pose.orientation.x = q_interpolated.x();
+        // p_inter.pose.orientation.y = q_interpolated.y();
+        // p_inter.pose.orientation.z = q_interpolated.z();
+
         /// normalized
         float norm = sqrt(p_inter.pose.orientation.w * p_inter.pose.orientation.w + p_inter.pose.orientation.x * p_inter.pose.orientation.x + p_inter.pose.orientation.y * p_inter.pose.orientation.y + p_inter.pose.orientation.z * p_inter.pose.orientation.z);
         assert(norm > 1e-1);
@@ -939,7 +961,7 @@ namespace cnuav {
         return point;
     }
 
-quadrotor_msgs::TrajectoryPoint Autopilot::getCirclePoint(const ros::Duration &duration) const {
+    quadrotor_msgs::TrajectoryPoint Autopilot::getCirclePoint(const ros::Duration &duration) const {
 
     float t = duration.toSec();
     quadrotor_msgs::TrajectoryPoint point;
@@ -1103,15 +1125,17 @@ quadrotor_msgs::TrajectoryPoint Autopilot::getCirclePoint(const ros::Duration &d
         auto p0 = std::prev(p1);
         const float ratio = (duration - p0->time_from_start).toSec() / (p1->time_from_start - p0->time_from_start).toSec();
 
-        return interpolate(*p0, *p1, ratio);
+        // return interpolate(*p0, *p1, ratio);
+        return *p1;
     }
 
     void Autopilot::calRefStates(const ros::Duration &time_from_start, Eigen::Ref<Eigen::Matrix<float, STATE_DIM, Eigen::Dynamic>> ref_states) const {
 
-        int N = ref_states.cols();
+        int N = ref_states.cols(); 
 
         float dt = controller_->getDt();
-
+        ROS_INFO("dt : %f", dt );
+        ROS_INFO("start :  %f + dt*n(%f) = : %f", time_from_start.toSec(), ros::Duration(N * dt).toSec() , time_from_start.toSec() + ros::Duration(N * dt).toSec() );
         for (int i = 0; i < N; i++) {
 
             ros::Duration t = time_from_start + ros::Duration(i * dt);
@@ -1321,4 +1345,58 @@ quadrotor_msgs::TrajectoryPoint Autopilot::getCirclePoint(const ros::Duration &d
 
 
 
-}// namespace cnuav
+void Autopilot::visualizePositions(const std::vector<Eigen::Vector3f>& positions, const Eigen::MatrixXf& ref_states) {
+    visualization_msgs::Marker marker;
+
+    marker.header.frame_id = "world"; // 假设使用的坐标系是 world
+    marker.header.stamp = ros::Time::now();
+    marker.ns = "state_positions";
+    marker.id = 0;
+    marker.type = visualization_msgs::Marker::SPHERE_LIST; // 显示一系列球体
+    marker.action = visualization_msgs::Marker::ADD;
+
+    marker.pose.orientation.w = 1.0; // 单位四元数，表示无旋转
+    marker.scale.x = 0.1; // 球体的尺寸
+    marker.scale.y = 0.1;
+    marker.scale.z = 0.1;
+
+    // 将每个位置点添加到 marker 中，并设置颜色
+    for (const auto& pos : positions) {
+        geometry_msgs::Point p;
+        p.x = pos.x();
+        p.y = pos.y();
+        p.z = pos.z();
+        marker.points.push_back(p);
+
+        // 设置 positions 的颜色（例如，红色）
+        std_msgs::ColorRGBA color;
+        color.r = 1.0;
+        color.g = 0.0;
+        color.b = 0.0;
+        color.a = 1.0;
+        marker.colors.push_back(color);
+    }
+
+    // 添加 ref_states 中的 x, y, z 组件，并设置颜色
+    for (int i = 0; i < ref_states.cols(); ++i) {
+        geometry_msgs::Point p;
+        p.x = ref_states(0, i); // x 位置
+        p.y = ref_states(1, i); // y 位置
+        p.z = ref_states(2, i); // z 位置
+        marker.points.push_back(p);
+
+        // 设置 ref_states 的颜色（例如，蓝色）
+        std_msgs::ColorRGBA color;
+        color.r = 0.0;
+        color.g = 0.0;
+        color.b = 1.0;
+        color.a = 1.0;
+        marker.colors.push_back(color);
+    }
+
+    // 发布 marker
+    marker_pub.publish(marker);
+}
+
+
+}

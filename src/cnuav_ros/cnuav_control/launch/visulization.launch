@@ -16,7 +16,6 @@
 
 
 
-!-- 启动 RViz -->
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find cnuav_control)/rviz/blanck.rviz" output="screen" />
 
   <!-- 发布 world frame -->

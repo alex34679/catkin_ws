@@ -13,6 +13,7 @@ Panels:
         - /Axes1
         - /Marker3
         - /Marker3/Namespaces1
+        - /Marker4
       Splitter Ratio: 0.5029411911964417
     Tree Height: 620
   - Class: rviz/Selection
@@ -136,6 +137,14 @@ Visualization Manager:
       Topic: /pose_array
       Unreliable: false
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /hummingbird/visualization_marker
+      Name: Marker
+      Namespaces:
+        state_positions: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -164,7 +173,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 6.616693019866943
+      Distance: 5.656203746795654
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -180,9 +189,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.9103992581367493
+      Pitch: 0.7503995299339294
       Target Frame: <Fixed Frame>
-      Yaw: 0.12539207935333252
+      Yaw: 0.5403918027877808
     Saved: ~
 Window Geometry:
   Displays:

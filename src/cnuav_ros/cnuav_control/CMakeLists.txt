@@ -54,6 +54,9 @@ add_message_files(
 catkin_install_python(PROGRAMS script/plot_trajectory.py
         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+catkin_install_python(PROGRAMS script/plot_trajectorycp.py
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 ################# MPC lib #################
 
 add_library(cnuav_qpoases_lib

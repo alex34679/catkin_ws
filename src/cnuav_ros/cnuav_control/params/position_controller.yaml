@@ -19,5 +19,5 @@ position_controller:
   
   k_drag_x: 0.1
   k_drag_y: 0.1
-  k_drag_z: 0.0
-  k_thrust_horz: 0
+  k_drag_z: 0.1
+  k_thrust_horz: 0.07

@@ -44,7 +44,7 @@
   </include>
 
 
-      <!-- 启动 odometry_visualizer 节点 --> -->
+      <!-- 启动 odometry_visualizer 节点 -->
     <!-- <node name="odometry_visualizer" pkg="cnuav_control" type="odometry_visualizer" output="screen" /> -->
 
   <!-- 启动 RViz -->
@@ -58,7 +58,8 @@
     <node pkg="cnuav_control" type="odometry_visualizer" name="odometry_visualizer" output="screen">
       <remap from="pose" to="/$(arg quad_name)/ground_truth/odometry" />
       <remap from="marker" to="/$(arg quad_name)/pose/marker"/>
-      <remap from="traj" to="/$(arg quad_name)/trajectory"/>
+      <!-- <remap from="traj" to="/$(arg quad_name)/trajectory"/> -->
+      <remap from="traj" to="/$(arg quad_name)/autopilot/trajectory"/>
       <remap from="traj_marker" to="/$(arg quad_name)/traj_marker"/>
       <param name="mode" value="true" />
       <param name="quad_name" value="$(arg quad_name)" />

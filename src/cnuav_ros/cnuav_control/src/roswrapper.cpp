@@ -89,16 +89,34 @@ namespace cnuav {
 
         Eigen::Matrix<float, STATE_DIM, 1> current_state;
 #ifdef SIMULATION
+
+        // 提取姿态四元数
+        Eigen::Quaterniond orientation(
+            odometry_.pose.pose.orientation.w,
+            odometry_.pose.pose.orientation.x,
+            odometry_.pose.pose.orientation.y,
+            odometry_.pose.pose.orientation.z);
+
+        // 提取机体坐标系下的速度
+        Eigen::Vector3d velocity_body(
+            odometry_.twist.twist.linear.x,
+            odometry_.twist.twist.linear.y,
+            odometry_.twist.twist.linear.z);
+
+        // 将速度转换到世界坐标系
+        Eigen::Vector3d velocity_world = orientation * velocity_body;
+
+        // 将位置、姿态和转换后的速度存储到 current_state
         current_state << odometry_.pose.pose.position.x,
-                odometry_.pose.pose.position.y,
-                odometry_.pose.pose.position.z,
-                odometry_.pose.pose.orientation.w,
-                odometry_.pose.pose.orientation.x,
-                odometry_.pose.pose.orientation.y,
-                odometry_.pose.pose.orientation.z,
-                odometry_.twist.twist.linear.x,
-                odometry_.twist.twist.linear.y,
-                odometry_.twist.twist.linear.z;
+                        odometry_.pose.pose.position.y,
+                        odometry_.pose.pose.position.z,
+                        odometry_.pose.pose.orientation.w,
+                        odometry_.pose.pose.orientation.x,
+                        odometry_.pose.pose.orientation.y,
+                        odometry_.pose.pose.orientation.z,
+                        velocity_world.x(),
+                        velocity_world.y(),
+                        velocity_world.z();
 
         
 #elif EXPERIMENT
@@ -422,7 +440,7 @@ namespace cnuav {
     
 
     Eigen::Quaterniond ROSWrapper::calculateQuaternion(const Eigen::Vector3d& cur_path, double fai) {  
-        const double g = 9.8;    
+        const double g = 9.81;    
         Eigen::Vector3d t = cur_path.head<3>(); // 使用Eigen的head方法获取前三个元素  
         t[2] += g; // 更新z分量  
 

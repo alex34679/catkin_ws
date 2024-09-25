@@ -35,11 +35,11 @@ int main( ){
     const double t_end = 1.0;       // Time horizon [s]
     const double dt = 0.05;          // Discretization time [s]
     const int N = round(t_end/dt);  // Number of nodes
-    const double g_z = 9.8066;      // Gravity is everywhere [m/s^2]
+    const double g_z = 9.81;  // Gravity is everywhere [m/s^2]
     const double w_max_yaw = 1;     // Maximal yaw rate [rad/s]
     const double w_max_xy = 3;      // Maximal pitch and roll rate [rad/s]
     const double T_min = 2;         // Minimal thrust [N]
-    const double T_max = 12;        // Maximal thrust [N]
+    const double T_max = 20;        // Maximal thrust [N]
 
 
     // System Dynamics
@@ -213,3 +213,4 @@ int main( ){
 
     return EXIT_SUCCESS;
 }
+

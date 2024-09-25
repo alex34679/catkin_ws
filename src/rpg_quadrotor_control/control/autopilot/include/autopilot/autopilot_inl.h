@@ -585,7 +585,7 @@ void AutoPilot<Tcontroller, Tparams>::trajectoryCallback(
       autopilot_state_ != States::TRAJECTORY_CONTROL) {
     return;
   }
-  if (msg->type == msg->UNDEFINED || msg->points.size() == 0) {
+  if (msg->points.size() == 0) {
     ROS_WARN("[%s] Received invalid trajectory, will ignore trajectory",
              pnh_.getNamespace().c_str());
     return;
@@ -1153,6 +1153,12 @@ AutoPilot<Tcontroller, Tparams>::executeTrajectory(
   }
   *trajectories_left_in_queue = trajectory_queue_.size();
 
+
+  if(reference_trajectory_.points.size() != 0){
+    auto ref_point = reference_trajectory_.points.front();;
+    publishAutopilotPlot(state_estimate, ref_point);
+  }
+
   const quadrotor_common::ControlCommand command = base_controller_.run(
       state_estimate, reference_trajectory_, base_controller_params_);
 
@@ -1382,6 +1388,105 @@ bool AutoPilot<Tcontroller, Tparams>::loadParameters() {
   return true;
 
 #undef GET_PARAM
+}
+
+
+template <typename Tcontroller, typename Tparams>
+void AutoPilot<Tcontroller, Tparams>::publishAutopilotPlot(
+    const quadrotor_common::QuadStateEstimate & state_estimate,
+    const quadrotor_common::TrajectoryPoint       ref_point) {
+  
+  // 构造实际状态
+  geometry_msgs::Vector3 actual_position;
+  actual_position.x = state_estimate.position.x();
+  actual_position.y = state_estimate.position.y();
+  actual_position.z = state_estimate.position.z();
+
+  geometry_msgs::Vector3 actual_velocity;
+  actual_velocity.x = state_estimate.velocity.x();
+  actual_velocity.y = state_estimate.velocity.y();
+  actual_velocity.z = state_estimate.velocity.z();
+
+  geometry_msgs::Vector3 actual_acceleration;
+  actual_acceleration.x = 0.0;
+  actual_acceleration.y = 0.0;
+  actual_acceleration.z = 0.0; // 假设实际加速度未提供，设为 0
+
+  geometry_msgs::Quaternion actual_orientation;
+  actual_orientation.w = state_estimate.orientation.w();
+  actual_orientation.x = state_estimate.orientation.x();
+  actual_orientation.y = state_estimate.orientation.y();
+  actual_orientation.z = state_estimate.orientation.z();
+
+    // 构造参考状态
+  geometry_msgs::Vector3 ref_position;
+  ref_position.x = ref_point.position.x();
+  ref_position.y = ref_point.position.y();
+  ref_position.z = ref_point.position.z();
+
+  geometry_msgs::Vector3 ref_velocity;
+  ref_velocity.x = ref_point.velocity.x();
+  ref_velocity.y = ref_point.velocity.y();
+  ref_velocity.z = ref_point.velocity.z();
+
+  geometry_msgs::Vector3 ref_acceleration;
+  ref_acceleration.x = ref_point.acceleration.x();
+  ref_acceleration.y = ref_point.acceleration.y();
+  ref_acceleration.z = ref_point.acceleration.z();
+
+  geometry_msgs::Quaternion ref_orientation;
+  ref_orientation.w = ref_point.orientation.w();
+  ref_orientation.x = ref_point.orientation.x();
+  ref_orientation.y = ref_point.orientation.y();
+  ref_orientation.z = ref_point.orientation.z();
+  
+  // 调用 saveTraj 函数并传递参数
+  saveTraj(
+    actual_position,
+    actual_velocity,
+    actual_acceleration,
+    ref_position,
+    ref_velocity,
+    ref_acceleration,
+    actual_orientation,
+    ref_orientation
+  );
+
+}
+
+
+template <typename Tcontroller, typename Tparams>
+void AutoPilot<Tcontroller, Tparams>::saveTraj(
+    const geometry_msgs::Vector3& np, 
+    const geometry_msgs::Vector3& nv, 
+    const geometry_msgs::Vector3& na, 
+    const geometry_msgs::Vector3& rp, 
+    const geometry_msgs::Vector3& rv, 
+    const geometry_msgs::Vector3& ra,    
+    const geometry_msgs::Quaternion& nw,
+    const geometry_msgs::Quaternion& rw) 
+{
+
+
+  // 添加实际的轨迹数据
+  traj_msg_.actual_position.push_back(np);
+  traj_msg_.actual_velocity.push_back(nv);
+  traj_msg_.actual_acceleration.push_back(na);
+  traj_msg_.actual_orientation.push_back(nw);
+
+  // 添加参考的轨迹数据
+  traj_msg_.reference_position.push_back(rp);
+  traj_msg_.reference_velocity.push_back(rv);
+  traj_msg_.reference_acceleration.push_back(ra);
+  traj_msg_.reference_orientation.push_back(rw);
+
+  // 获取当前时间
+  ros::Time current_time = ros::Time::now();
+
+  // 将 ros::Time 转换为 std_msgs::Float64 并添加到消息中
+  std_msgs::Float64 time_msg;
+  time_msg.data = current_time.toSec();  // 转换为秒
+  traj_msg_.actual_time.push_back(time_msg);  // 添加到消息中
 }
 
 template class AutoPilot<position_controller::PositionController,

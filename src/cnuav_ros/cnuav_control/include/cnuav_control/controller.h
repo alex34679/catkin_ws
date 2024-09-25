@@ -4,6 +4,8 @@
 #include "cnuav_control/common.h"
 #include <Eigen/Core>
 #include <string>
+#include <iostream>
+#include <vector>
 
 namespace cnuav {
 
@@ -52,6 +54,7 @@ namespace cnuav {
          */
         virtual Eigen::Matrix<float, CONTROL_DIM, 1> getInputs() const = 0;
 
+        virtual std::vector<Eigen::Vector3f> getStatePositions() const = 0;
         /**
          * post contro process
          */

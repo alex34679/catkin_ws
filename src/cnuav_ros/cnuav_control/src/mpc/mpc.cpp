@@ -8,8 +8,8 @@ namespace cnuav {
     MPCController::MPCController(const std::string &filename) {
 
         loadParams(filename);
-
-        uh_ << 9.79,
+        //9.79
+        uh_ << 9.83,
                 0,
                 0,
                 0;
@@ -31,6 +31,7 @@ namespace cnuav {
 
         if (node["max_thrust"]) {
             params_.max_thrust = node["max_thrust"].as<float>();
+            ROS_INFO("max_trust : %f", params_.max_thrust);
         } else {
             bSuccess = false;
         }
@@ -134,7 +135,7 @@ namespace cnuav {
     }
     
     Eigen::Matrix<float, CONTROL_DIM, 1> MPCController::getInputs() const {
-        const float alpha = 0.5;
+        const float alpha = 0.3;
 
         static Eigen::Matrix<float, CONTROL_DIM, 1> u_pre = Eigen::Matrix<float, CONTROL_DIM, 1>::Zero();
 
@@ -146,6 +147,22 @@ namespace cnuav {
         u_pre = u;
 
         return u_filtered;
+    }
+
+
+    // 函数返回状态向量的列表
+    std::vector<Eigen::Vector3f> MPCController::getStatePositions() const{
+
+
+        std::vector<Eigen::Vector3f> positions;
+
+        // 提取每个状态向量的前三个元素 (x, y, z) 并存储到 positions 向量中
+        for (int i = 0; i <= N; ++i) {
+            Eigen::Vector3f position = x_.col(i).head<3>(); // 提取前三个状态 (x, y, z)
+            positions.push_back(position);
+        }
+
+        return positions;
     }
 
     void MPCController::postControlProcess() {
@@ -195,7 +212,6 @@ namespace cnuav {
         Eigen::Matrix<float, kState, 1> WN;
         WN = params_.Q;
         setWeightMatrix(W, WN);
-
         acado_initializeNodesByForwardSimulation();
 
         acado_preparationStep();

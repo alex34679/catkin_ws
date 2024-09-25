@@ -18,6 +18,10 @@
 #include "geometry_msgs/Quaternion.h"
 #include <std_msgs/Float64.h>  // 添加此头文件
 
+#include <visualization_msgs/Marker.h>
+#include <geometry_msgs/Point.h>
+
+
 namespace cnuav {
 
 
@@ -38,6 +42,7 @@ namespace cnuav {
         void mainLoop(const ros::TimerEvent &event);
 
         void pubTraj(const ros::TimerEvent &event);
+        
 
         
 
@@ -128,9 +133,12 @@ namespace cnuav {
                         const geometry_msgs::Quaternion& nw,
                         const geometry_msgs::Quaternion& rw);
 
+        void visualizePositions(const std::vector<Eigen::Vector3f>& positions, const Eigen::MatrixXf& ref_states);
+
         ROSWrapper *wrapper_;
 
         Controller *controller_;
+
 
         Status status_;
 
@@ -220,8 +228,11 @@ namespace cnuav {
         cnuav_control::TrajectoryTracking traj_msg_;
 
         ros::Publisher traj_pub_;
+        ros::Publisher marker_pub;
+
+
+
     };
 
 }// namespace cnuav
-
 #endif//SRC_AUTOPILOT_H

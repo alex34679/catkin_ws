@@ -48,7 +48,7 @@
 
 
     <remap from="pose" to="/$(arg quad_name)/ground_truth/odometry" />
-    <remap from="traj" to="/$(arg quad_name)/trajectory"/>
+    <remap from="traj" to="/$(arg quad_name)/autopilot/trajectory"/>
     <param name="mode" value="true" />
 
 
