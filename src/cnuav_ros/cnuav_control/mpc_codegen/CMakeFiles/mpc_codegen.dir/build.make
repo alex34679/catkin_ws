@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/lty/work_7.22/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen
+CMAKE_SOURCE_DIR =/home/lty/ustc/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/lty/work_7.22/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen
+CMAKE_BINARY_DIR =/home/lty/ustc/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen
 
 # Include any dependencies generated for this target.
 include CMakeFiles/mpc_codegen.dir/depend.make
@@ -60,15 +60,15 @@ include CMakeFiles/mpc_codegen.dir/flags.make
 CMakeFiles/mpc_codegen.dir/mpc_codegen.cpp.o: CMakeFiles/mpc_codegen.dir/flags.make
 CMakeFiles/mpc_codegen.dir/mpc_codegen.cpp.o: mpc_codegen.cpp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/lty/work_7.22/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/mpc_codegen.dir/mpc_codegen.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/mpc_codegen.dir/mpc_codegen.cpp.o -c /home/lty/work_7.22/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen/mpc_codegen.cpp
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/mpc_codegen.dir/mpc_codegen.cpp.o -c/home/lty/ustc/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen/mpc_codegen.cpp
 
 CMakeFiles/mpc_codegen.dir/mpc_codegen.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/mpc_codegen.dir/mpc_codegen.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/lty/work_7.22/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen/mpc_codegen.cpp > CMakeFiles/mpc_codegen.dir/mpc_codegen.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E/home/lty/ustc/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen/mpc_codegen.cpp > CMakeFiles/mpc_codegen.dir/mpc_codegen.cpp.i
 
 CMakeFiles/mpc_codegen.dir/mpc_codegen.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/mpc_codegen.dir/mpc_codegen.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/lty/work_7.22/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen/mpc_codegen.cpp -o CMakeFiles/mpc_codegen.dir/mpc_codegen.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S/home/lty/ustc/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen/mpc_codegen.cpp -o CMakeFiles/mpc_codegen.dir/mpc_codegen.cpp.s
 
 # Object files for target mpc_codegen
 mpc_codegen_OBJECTS = \
@@ -94,6 +94,6 @@ CMakeFiles/mpc_codegen.dir/clean:
 .PHONY : CMakeFiles/mpc_codegen.dir/clean
 
 CMakeFiles/mpc_codegen.dir/depend:
-	cd /home/lty/work_7.22/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/lty/work_7.22/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen /home/lty/work_7.22/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen /home/lty/work_7.22/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen /home/lty/work_7.22/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen /home/lty/work_7.22/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen/CMakeFiles/mpc_codegen.dir/DependInfo.cmake --color=$(COLOR)
+	cd/home/lty/ustc/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles"/home/lty/ustc/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen/home/lty/ustc/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen/home/lty/ustc/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen/home/lty/ustc/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen/home/lty/ustc/catkin_ws/src/cnuav_ros/cnuav_control/mpc_codegen/CMakeFiles/mpc_codegen.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/mpc_codegen.dir/depend
 
