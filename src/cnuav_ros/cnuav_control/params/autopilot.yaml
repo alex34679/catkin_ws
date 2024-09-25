@@ -3,7 +3,7 @@
 verbose: true
 
 enable_log: true
-log_filename: /home/lty/work_7.22/catkin_ws/src/cnuav_ros/cnuav_control/log/log.txt
+log_filename:/home/lty/ustc/catkin_ws/src/cnuav_ros/cnuav_control/log/log.txt
 
 enable_integral_compensation: true
 
