@@ -1,0 +1,6 @@
+devel_space: /home/lty/rpg/data_driven_mpc/ros_gp_mpc/devel
+install: false
+install_space: /home/lty/rpg/data_driven_mpc/ros_gp_mpc/install
+profile: default
+source_space: /home/lty/rpg/data_driven_mpc/ros_gp_mpc/src
+workspace: /home/lty/rpg/data_driven_mpc/ros_gp_mpc

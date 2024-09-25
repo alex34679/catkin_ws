@@ -1,0 +1,8 @@
+LICENSE
+README.md
+setup.py
+Data_Driven_MPC_for_Quadrotors.egg-info/PKG-INFO
+Data_Driven_MPC_for_Quadrotors.egg-info/SOURCES.txt
+Data_Driven_MPC_for_Quadrotors.egg-info/dependency_links.txt
+Data_Driven_MPC_for_Quadrotors.egg-info/requires.txt
+Data_Driven_MPC_for_Quadrotors.egg-info/top_level.txt
