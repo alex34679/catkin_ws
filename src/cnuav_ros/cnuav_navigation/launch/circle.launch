@@ -6,7 +6,7 @@
         <remap from="traj" to="/$(arg quad_name)/trajectory"/>
         
         <remap from="traj" to="/$(arg quad_name)/autopilot/trajectory" />
-        <!-- <rosparam file="$(find cnuav_control)/params/autopilot.yaml" /> -->
+        <rosparam file="$(find cnuav_control)/params/autopilot.yaml" />
         <param name="mode" value="true" />
         <remap from="pose" to="/$(arg quad_name)/ground_truth/odometry" />
     </node>
